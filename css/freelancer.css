@@ -6,7 +6,7 @@
 
 body {
     overflow-x: hidden;
-    background-image: url("../img/congruent_pentagon.png");
+    /*background-image: url("../img/footer_lodyas.png");*/
 }
 
 p {
@@ -84,7 +84,7 @@ header {
     text-align: center;
     color: #fff;
     background: #18bc9c;
-    background-image: url("../img/footer_lodyas.png");
+    /*background-image: url("../img/dark_stripes.png");*/
 }
 
 header .container {
@@ -184,7 +184,7 @@ section h2 {
 section.success {
     color: #fff;
     background: #18bc9c;
-    background-image: url("../img/footer_lodyas.png");
+    /*background-image: url("../img/dark_stripes.png");*/
 }
 
 @media(max-width:767px) {
