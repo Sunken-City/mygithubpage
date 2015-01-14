@@ -6,6 +6,7 @@
 
 body {
     overflow-x: hidden;
+    background-image: url("../img/congruent_pentagon.png");
 }
 
 p {
@@ -83,6 +84,7 @@ header {
     text-align: center;
     color: #fff;
     background: #18bc9c;
+    background-image: url("../img/footer_lodyas.png");
 }
 
 header .container {
@@ -182,6 +184,7 @@ section h2 {
 section.success {
     color: #fff;
     background: #18bc9c;
+    background-image: url("../img/footer_lodyas.png");
 }
 
 @media(max-width:767px) {
