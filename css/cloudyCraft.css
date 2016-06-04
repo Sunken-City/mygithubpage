@@ -81,11 +81,18 @@ hr.star-primary:after {
     margin: 0 auto;
 }
 
+.centered {
+  text-align: center;
+}
+
 header {
     text-align: center;
     color: #fff;
     background: #FF4500;
     background-image: url("../img/portfolio/CloudyCraft/realTimePortals.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
 }
 
 header .container {
@@ -413,6 +420,10 @@ footer .footer-below {
     box-shadow: none;
 }
 
+.portfolio-modal .modal-content .row{
+  background-color: #ffffff;
+}
+
 .portfolio-modal .modal-content h2 {
     margin: 0;
     font-size: 3em;
@@ -427,7 +438,8 @@ footer .footer-below {
 }
 
 .portfolio-modal .close-modal {
-    position: absolute;
+    position: relative;
+    float: right;
     top: 25px;
     right: 25px;
     width: 75px;
