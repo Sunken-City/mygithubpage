@@ -433,6 +433,21 @@ footer .footer-below {
     margin-bottom: 30px;
 }
 
+.big-button{
+  font-size: 1.5em;
+}
+
+.left-border{
+  border-left-color: #FF4500;
+  border-left-style: solid;
+  border-left-width: thick;
+}
+
+.game-features{
+  font-size: 1.3em;
+  list-style: none;
+}
+
 .portfolio-modal .modal-content .item-details {
     margin: 30px 0;
 }
