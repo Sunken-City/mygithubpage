@@ -96,10 +96,13 @@
             </div>
             <div class="row">
                 <div class="col-lg-4">
-                    <p>CloudyCraft is my personal minecraft clone with support for real-time nether portals, alternate dimensions, colored lighting, and stained glass that filters light.</p>
+                    <p>CloudyCraft is my personal minecraft clone with support for real-time "nether" portals, alternate dimensions,
+                       colored lighting, and stained glass that filters light. Currently a work in progress.
+                       The game was built from the ground up using my own homemade engine, written in C++ and using OpenGL for rendering.</p>
                 </div>
                 <div class="col-lg-4">
-                    <p>Currently a work in progress. The game was built from the ground up using my own homemade engine, written in C++ and using OpenGL for rendering.</p>
+                    <p>I added real-time portals to the game not only to explore an idea I was passionate about, but also to show what multithreading my chunk generation and I/O enabled me to do.
+                      I had also just learned about shaders and FBO's (Framebuffer Objects), and I wanted to challenge myself and gain a deeper understanding of what I could do with them.</p>
                 </div>
                 <div class="col-lg-4 left-border">
                     <p>
@@ -315,8 +318,18 @@
                             <a href="../../img/portfolio/CloudyCraft/portalCreation.gif">
                               <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalCreation_min.gif">
                             </a>
-                            <p class="left-align">Players can open a portal to an alternate dimension on any block face.</p>
-                            <p class="left-align">This includes placing portals in thin air!</p>
+                            <p class="left-align">
+                              Players can open a portal to an alternate dimension on any block face.
+                              These are thin portals that can exist on any of the block faces in the game, even thin air!
+                              The gif above shows how to create such a portal, with no frame required like traditional nether portals.
+                            </p>
+                            <p class="left-align">
+                              I implemented portals as a bitflag attached to each block, with a bit toggled on or off depending on which of the 6 faces of the block had portals.
+                              This allowed for me to make quick checks to find out which portals were active and inactive by using bitmasking.
+                              Since a lot of checks are made each frame to see whether or not a block has portals, I knew I needed the speed of a bitwise operator to keep the game performant.
+                              The other reason I went for bitflags involved the size of the blocks themselves, as the game currently holds about 1000 chunks in memory at any given time. 
+                              I've kept my blocks as flyweight as possible, as there are generally millions of them in memory making every byte add up quickly.
+                            </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
                     </div>
@@ -383,8 +396,12 @@
                             <a href="../../img/portfolio/CloudyCraft/coloredLighting.gif">
                               <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/coloredLighting_min.gif">
                             </a>
-                            <p class="left-align">I added colored lighting to the game as well. These colors mix together as they propogate throughout the world.</p>
-                            <p class="left-align">Colored lights also propogate across portal boundaries as well!</p>
+                            <p class="left-align">I added colored lighting to the game as well. These colors mix together as they propogate throughout the world, capable of lighting blocks with any 24-bit RGB color.</p>
+                            <p class="left-align">Colored lights also propogate across portal boundaries as well!
+                              Since the light propogation uses an abstracted version of the blocks to provide seamless transitions across chunk boundaries,
+                              I was able to expand that to support portals. Whenever a block attempts to grab one of it's neighbors,
+                              I check to see if there's a portal on the face that I'm about to cross. If so, we swap dimensions and continue propogation.
+                              Because of the abstract representation of blocks I built, this was a much easier problem to solve than it would appear.</p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
@@ -430,7 +447,7 @@
                             <a href="../../img/portfolio/CloudyCraft/portalDebuggingRendering.gif">
                               <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif">
                             </a>
-                            <p class="left-align">While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as resolve issues with the system itself.</p>
+                            <p class="left-align">While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.</p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
