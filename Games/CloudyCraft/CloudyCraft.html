@@ -358,10 +358,15 @@
                               <img src="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif">
                             </a>
                             <p class="left-align">
-                              Players are able to pass through any portals to swap dimensions.
+                              Players are able to pass through any portals to swap dimensions. Entering the dimension in the portal is as simple as walking through the portal (or falling through it!).
+                              As soon as the player's midpoint passes through the middle of a portal, they swap dimensions, and can move freely about the other world.
                             </p>
                             <p class="left-align">
-                              Players are able to pass through any portals to swap dimensions.
+                              I wrote the physics for the player using preventative instead of corrective physics (I prevent the player from getting inside of blocks, instead of constantly correcting them whenever they do).
+                              This was one of the hardest parts of the project, as I'd never implemented it before, and it sounded a lot easier than it actually turned out to be.
+                              After a few long sessions, I was able to get it into a good state, where it used small raytraces from the bounds of the box (12 points: the corners and 4 around the box's waist) to determine
+                              whether or not the motion would collide with a block. This actually ended up being the secret to getting my physics to work with crossing portal boundaries, because I was able to
+                              refactor my raycast function to account for portal boundaries, swapping dimensions if it ever needed to while determining collisions.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -384,8 +389,17 @@
                             <a href="../../img/portfolio/CloudyCraft/jumpThrough.gif">
                               <img src="../../img/portfolio/CloudyCraft/jumpThrough_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/jumpThrough_min.gif">
                             </a>
-                            <p class="left-align">Portals can exist on any blockface, even the above and below faces of a block.</p>
-                            <p class="left-align">This allows the player to jump down a portal, adding creative ways to get around the world.</p>
+                            <p class="left-align">
+                              Portals can exist on any blockface, even the above and below faces of a block.
+                              This allows the player to jump down a portal, adding creative ways to get around the world.
+                            </p>
+                            <p class="left-align">
+                              While working on some of the portal physics, I had a bug where if there were blocks behind the portal I'd be unable to pass through, getting stuck inside of
+                              the blocks inside this dimension after starting to move into them. I knew I needed to resolve this issue by giving each of my preventative raycast points a sense of what world they were in.
+                              Before I start my preventative raycasts, I raycast from the player's center out to each of the 12 points on the bounding box, which gives me the world each of those endpoints is in.
+                              This way, when they start the raycast to see if the player can move without hitting anything, each of them checks against the correct world's blocks, allowing players to pass through solid blocks
+                              in one world into open air in another.
+                            </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
                     </div>
