@@ -421,12 +421,17 @@
                             <a href="../../img/portfolio/CloudyCraft/coloredLighting.gif">
                               <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/coloredLighting_min.gif">
                             </a>
-                            <p class="left-align">I added colored lighting to the game as well. These colors mix together as they propogate throughout the world, capable of lighting blocks with any 24-bit RGB color.</p>
-                            <p class="left-align">Colored lights also propogate across portal boundaries as well!
+                            <p class="left-align">
+                              I added colored lighting to the game as well.
+                              These colors mix together as they propogate throughout the world, capable of lighting blocks with any 24-bit RGB color.
+                            </p>
+                            <p class="left-align">
+                              Colored lights also propogate across portal boundaries as well!
                               Since the light propogation uses an abstracted version of the blocks to provide seamless transitions across chunk boundaries,
                               I was able to expand that to support portals. Whenever a block attempts to grab one of it's neighbors,
                               I check to see if there's a portal on the face that I'm about to cross. If so, we swap dimensions and continue propogation.
-                              Because of the abstract representation of blocks I built, this was a much easier problem to solve than it would appear.</p>
+                              Because of the abstract representation of blocks I built, this was a much easier problem to solve than it would appear.
+                            </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
@@ -449,7 +454,17 @@
                             <a href="../../img/portfolio/CloudyCraft/buildThroughPortal.gif">
                               <img src="../../img/portfolio/CloudyCraft/buildThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/buildThroughPortal_min.gif">
                             </a>
-                            <p class="left-align">When looking through a portal, you can dig and place blocks through the portal into the other world. If you open up a portal into a wall deep underground, you can dig a little crawl space out through the portal to pass through.</p>
+                            <p class="left-align">
+                              When looking through a portal, you can dig and place blocks through the portal into the other world.
+                              If you open up a portal into a wall deep underground, you can dig a little crawl space out through the portal to pass through.
+                            </p>
+                            <p class="left-align">
+                              This is one of the most exciting ideas I had about the real-time nether portals when I began designing how they would work.
+                              The idea that if I opened a portal somewhere that was buried underground, I would be able to dig a crawlspace out through the portal to enter the other world.
+                              This works in game because I refactored my Amanatides-Woo Raycast function to account for portals, such that they can cross portal boundaries and begin interacting with the other world.
+                              Since my block digging and placing uses this raycast, adding in support for portals allowed the raycast to begin working across boundaries immediately.
+                              Although it definitely needs some polish to be a gameplay feature that users understand, the concept works just like it should and enables portals to be flexible for users without automatically destroying blocks in the other world.
+                            </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
@@ -472,7 +487,20 @@
                             <a href="../../img/portfolio/CloudyCraft/portalDebuggingRendering.gif">
                               <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif">
                             </a>
-                            <p class="left-align">While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.</p>
+                            <p class="left-align">
+                              While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.
+                            </p>
+                            <p class="left-align">
+                              I wrote a simple profiler during the initial development to figure out where I was spending my time each frame, which helped me root out a few problems with my chunk management.
+                              This helped me to prove what parts of my code weren't performant, and helped me to prove when assumptions I was making were valid or invalid, helping me to better understand my codebase.
+                              Along the bottom left of this GIF, you can see a series of extra render targets (You can click on the GIF to make it larger!). The most important one is the 2nd from the left, however.
+                            </p>
+                            <p class="left-align">
+                              The 2nd from the left is my portal depth buffer, a second color target that I have attached to the first pass of the shader, where it writes out the depth of any portal values, and writes
+                              the max depth for any geometry that isn't a portal. This target is used in the second pass of the shader, and is how I determine what can be drawn in the portal area. Only things behind
+                              this portal are able to be drawn, and since everything else that's not a portal is at max depth, nothing can be drawn behind it, making this color target function like a combination of stencil and depth buffer.
+                            </p>
+
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
