@@ -242,6 +242,8 @@ section.success {
 #portfolio .portfolio-item .portfolio-link .caption .caption-content h3,
 #portfolio .portfolio-item .portfolio-link .caption .caption-content h4 {
     margin: 0;
+    margin-top: -48px;
+    margin-bottom: 24px;
 }
 
 #portfolio * {
