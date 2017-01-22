@@ -150,6 +150,18 @@
           </div>
         </div>
         <div class="row">
+        <div class="col-sm-4 portfolio-item">
+          <a href="#dialogue" class="portfolio-link" data-toggle="modal">
+            <div class="caption">
+              <div class="caption-content">
+                <div><h3>Dialogue</h3></div>
+                <i class="fa fa-newspaper-o fa-3x"></i>
+                <div>Read More</div>
+              </div>
+            </div>
+            <img src="../../img/portfolio/Greebles/cutsceneDialogue.gif" class="img-responsive" alt="">
+          </a>
+        </div>
           <div class="col-sm-4 portfolio-item">
             <a href="#musicAudio" class="portfolio-link" data-toggle="modal">
               <div class="caption">
@@ -175,19 +187,7 @@
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#jumpThrough" class="portfolio-link" data-toggle="modal">
-              <div class="caption">
-                <div class="caption-content">
-                  <div><h3>Dialogue</h3></div>
-                  <i class="fa fa-newspaper-o fa-3x"></i>
-                  <div>Read More</div>
-                </div>
-              </div>
-              <img src="../../img/portfolio/Greebles/cutsceneDialogue.gif" class="img-responsive" alt="">
-            </a>
-          </div>
-          <div class="col-sm-4 portfolio-item">
-            <a href="#coloredLighting" class="portfolio-link" data-toggle="modal">
+            <a href="#specialGreebles" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
                   <div><h3>Special Greebles</h3></div>
@@ -199,7 +199,7 @@
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#debugging" class="portfolio-link" data-toggle="modal">
+            <a href="#fruits" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
                   <div><h3>Fruits</h3></div>
@@ -277,22 +277,18 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Portal Creation</h2>
+                            <h2>Main Menu</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalCreation.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalCreation_min.gif">
+                            <a href="../../img/portfolio/Greebles/greeblesMenuScreen.gif">
+                              <img src="../../img/portfolio/Greebles/greeblesMenuScreen.gif" class="img-responsive img-centered" alt="../../img/portfolio/Greebles/greeblesMenuScreen.gif">
                             </a>
                             <p class="left-align">
-                              Players can open a portal to an alternate dimension on any block face.
-                              These are thin portals that can exist on any of the block faces in the game, even thin air!
-                              The gif above shows how to create such a portal, with no frame required like traditional nether portals.
+
                             </p>
                             <p class="left-align">
-                              I implemented portals as a bitflag attached to each block, with a bit toggled on or off depending on which of the 6 faces of the block had portals.
-                              This allowed for me to make quick checks to find out which portals were active and inactive by using bitmasking.
-                              Since a lot of checks are made each frame to see whether or not a block has portals, I knew I needed the speed of a bitwise operator to keep the game performant.
-                              The other reason I went for bitflags involved the size of the blocks themselves, as the game currently holds about 1000 chunks in memory at any given time.
-                              I've kept my blocks as flyweight as possible, as there are generally millions of them in memory making every byte add up quickly.
+                              I did the majority of the work on the main menu as well, which included working with the save/load subsystem to load all of the player's data for the main menu,
+                              determining whether or not they'd perfected, passed, or were able to visit any stage.
+                              I helped to create the special text boxes and polished the menu by adding Draper traveling back and forth along the map's path.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -312,19 +308,16 @@
                         <div class="modal-body">
                             <h2>Cutscene Controller</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/passThroughPortal.gif">
-                              <img src="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif">
+                            <a href="../../img/portfolio/Greebles/blastOff.gif">
+                              <img src="../../img/portfolio/Greebles/blastOff.gif" class="img-responsive img-centered" alt="../../img/portfolio/Greebles/blastOff.gif">
                             </a>
                             <p class="left-align">
-                              Players are able to pass through any portals to swap dimensions. Entering the dimension in the portal is as simple as walking through the portal (or falling through it!).
-                              As soon as the player's midpoint passes through the middle of a portal, they swap dimensions, and can move freely about the other world.
+                              To help the animators and artists on the team, I created a cutscene controller that helped them to string animations together.
                             </p>
                             <p class="left-align">
-                              I wrote the physics for the player using preventative instead of corrective physics (I prevent the player from getting inside of blocks, instead of constantly correcting them whenever they do).
-                              This was one of the hardest parts of the project, as I'd never implemented it before, and it sounded a lot easier than it actually turned out to be.
-                              After a few long sessions, I was able to get it into a good state, where it used small raytraces from the bounds of the box (12 points: the corners and 4 around the box's waist) to determine
-                              whether or not the motion would collide with a block. This actually ended up being the secret to getting my physics to work with crossing portal boundaries, because I was able to
-                              refactor my raycast function to account for portal boundaries, swapping dimensions if it ever needed to while determining collisions.
+                              I worked directly with the primary animator to understand the needs for the system, what they would like to use and how they intended
+                              to use it, and I created a system to their desires. The controller allows the animators to chain together their individual scenes, add lines of dialog,
+                              and included the ability to skip cutscenes.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -333,7 +326,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="jumpThrough" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="dialogue" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -342,21 +335,21 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Jumping Through</h2>
+                            <h2>Dialogue</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/jumpThrough.gif">
-                              <img src="../../img/portfolio/CloudyCraft/jumpThrough_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/jumpThrough_min.gif">
+                            <a href="../../img/portfolio/Greebles/cutsceneDialogue.gif">
+                              <img src="../../img/portfolio/Greebles/cutsceneDialogue.gif" class="img-responsive img-centered" alt="../../img/portfolio/Greebles/cutsceneDialogue.gif">
                             </a>
                             <p class="left-align">
-                              Portals can exist on any blockface, even the above and below faces of a block.
-                              This allows the player to jump down a portal, adding creative ways to get around the world.
+                              I worked with the design, art, and story teams to create a dialogue system that was easy to use and effective.
+                              The system was good enough that when I went on hiatius for a little while, I wasn't needed to fix any issues or clarify the toolchain.
                             </p>
                             <p class="left-align">
-                              While working on some of the portal physics, I had a bug where if there were blocks behind the portal I'd be unable to pass through, getting stuck inside of
-                              the blocks inside this dimension after starting to move into them. I knew I needed to resolve this issue by giving each of my preventative raycast points a sense of what world they were in.
-                              Before I start my preventative raycasts, I raycast from the player's center out to each of the 12 points on the bounding box, which gives me the world each of those endpoints is in.
-                              This way, when they start the raycast to see if the player can move without hitting anything, each of them checks against the correct world's blocks, allowing players to pass through solid blocks
-                              in one world into open air in another.
+                              The dialog system was one of the most extensive systems I created while at Fractal Fox. I worked on everything from character by character text to
+                              implementing animations and actors during the cutscene. The system read from a script file that the story team could create while in editor, which
+                              took in a line of dialoge and any actors, animations, and facial expressions needed for the delivery of the line. I also implemented a feature to skip
+                              past dialogue, as well as audio features and voice acting during the scenes. Fun fact for reading this far: every member of the team got to voice act a character,
+                              and despite being the youngest member of the team, I was the voice actor for Sage, the oldest character!
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -365,7 +358,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="coloredLighting" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="specialGreebles" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -374,21 +367,21 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Colored Lighting</h2>
+                            <h2>Special Greebles</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/coloredLighting.gif">
-                              <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/coloredLighting_min.gif">
+                            <a href="../../img/portfolio/Greebles/coloredGreebles.gif">
+                              <img src="../../img/portfolio/Greebles/coloredGreebles.gif" class="img-responsive img-centered" alt="../../img/portfolio/Greebles/coloredGreebles.gif">
                             </a>
                             <p class="left-align">
-                              I added colored lighting to the game as well.
-                              These colors mix together as they propogate throughout the world, capable of lighting blocks with any 24-bit RGB color.
+                              As one of a couple of programmers at an indie studio, I had my hands in a lot of different parts of the code. I helped to make a few of the special
+                              colored greebles, each with a unique effect that helped the player to save more greebles easily.
                             </p>
                             <p class="left-align">
-                              Colored lights also propogate across portal boundaries as well!
-                              Since the light propogation uses an abstracted version of the blocks to provide seamless transitions across chunk boundaries,
-                              I was able to expand that to support portals. Whenever a block attempts to grab one of it's neighbors,
-                              I check to see if there's a portal on the face that I'm about to cross. If so, we swap dimensions and continue propogation.
-                              Because of the abstract representation of blocks I built, this was a much easier problem to solve than it would appear.
+                              I worked on the green greebles, which created a vortex around them that would suck in and save greebles. The green greebles created an area of effect that
+                              grabbed any greebles within the lane it was in and the two surrounding lanes and sucked them in. Pink greebles used an effect that slowed down an entire lane
+                              of greebles, applying the slowing effect as long as it was out in the field. I also helped with some of the first passes of the red greeble, which invovled
+                              3 distinct stages that could bounce greebles in various directions to safety.
+                              This was changed later in development, however, towards something that had less uncertainty and sent greebles straight up.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
@@ -430,7 +423,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="debugging" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="fruits" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -439,25 +432,21 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Debugging</h2>
+                            <h2>Fruits</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalDebuggingRendering.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif">
+                            <a href="../../img/portfolio/Greebles/fruitEffects.gif">
+                              <img src="../../img/portfolio/Greebles/fruitEffects.gif" class="img-responsive img-centered" alt="../../img/portfolio/Greebles/fruitEffects.gif">
                             </a>
                             <p class="left-align">
-                              While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.
+                              I helped implementing the fruit in the game as well, which are an obstacle for the players. Tapping on fruit creates a negative effect based on the
+                              kind of fruit you tap on, with some zapping all greebles on the screen, while others froze them in place.
                             </p>
                             <p class="left-align">
-                              I wrote a simple profiler during the initial development to figure out where I was spending my time each frame, which helped me root out a few problems with my chunk management.
-                              This helped me to prove what parts of my code weren't performant, and helped me to prove when assumptions I was making were valid or invalid, helping me to better understand my codebase.
-                              Along the bottom left of this GIF, you can see a series of extra render targets (You can click on the GIF to make it larger!). The most important one is the 2nd from the left, however.
+                              The fruit inhereted a lot of the properties of the greebles, including the same nature of being able to be saved via tapping. Each had it's own OnTapped function
+                              based on the parent class, which enabled reuse of the common functionality between the fruit and greebles as gameplay objects. I helped to implement the shocker fruit,
+                              which found greebles on the screen that hadn't yet been saved and killed them, replacing them with unsalvageable husks. I also helped with a wide variety of bugfixes
+                              and polish items for the fruit as they came up, as the indie studio life involved wearing a lot of hats.
                             </p>
-                            <p class="left-align">
-                              The 2nd from the left is my portal depth buffer, a second color target that I have attached to the first pass of the shader, where it writes out the depth of any portal values, and writes
-                              the max depth for any geometry that isn't a portal. This target is used in the second pass of the shader, and is how I determine what can be drawn in the portal area. Only things behind
-                              this portal are able to be drawn, and since everything else that's not a portal is at max depth, nothing can be drawn behind it, making this color target function like a combination of stencil and depth buffer.
-                            </p>
-
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
