@@ -23,7 +23,7 @@ a:focus,
 a:active,
 a.active {
     outline: 0;
-    color: #3A3F4C;
+    color: #5C6477;
 }
 
 h1,
@@ -65,7 +65,7 @@ hr.star-light {
 
 hr.star-light:after {
     color: #fff;
-    background-color: #3A3F4C;
+    background-color: #5C6477;
 }
 
 hr.star-primary {
@@ -88,7 +88,7 @@ hr.star-primary:after {
 header {
     text-align: center;
     color: #fff;
-    background: #3A3F4C;
+    background: #5C6477;
     background-image: url("../img/portfolio/Greebles/greeblesBanner.jpg");
     background-size: cover;
     background-repeat: no-repeat;
@@ -200,7 +200,7 @@ section h2 {
 
 section.success {
     color: #fff;
-    background: #3A3F4C;
+    background: #5C6477;
     /*background-image: url("../img/dark_stripes.png");*/
 }
 
@@ -287,7 +287,7 @@ section.success {
 .btn-outline:active,
 .btn-outline.active {
     border: solid 2px #000;
-    color: #3A3F4C;
+    color: #5C6477;
     background: #000;
 }
 
@@ -340,7 +340,7 @@ section.success {
 }
 
 .floating-label-form-group-with-focus label {
-    color: #3A3F4C;
+    color: #5C6477;
 }
 
 form .row:first-child .floating-label-form-group {
@@ -440,7 +440,7 @@ footer .footer-below {
 }
 
 .left-border{
-  border-left-color: #3A3F4C;
+  border-left-color: #5C6477;
   border-left-style: solid;
   border-left-width: thick;
 }
