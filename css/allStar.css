@@ -23,7 +23,7 @@ a:focus,
 a:active,
 a.active {
     outline: 0;
-    color: #FF4500;
+    color: #7F0799;
 }
 
 h1,
@@ -60,21 +60,21 @@ hr.star-primary:after {
 }
 
 hr.star-light {
-    border-color: #F5FAEF;
+    border-color: #AFBBF2;
 }
 
 hr.star-light:after {
-    color: #F5FAEF;
-    background-color: #FF4500;
+    color: #AFBBF2;
+    background-color: #7F0799;
 }
 
 hr.star-primary {
-    border-color: #B23000;
+    border-color: #9649CB;
 }
 
 hr.star-primary:after {
-    color: #B23000;
-    background-color: #F5FAEF;
+    color: #9649CB;
+    background-color: #AFBBF2;
 }
 
 .img-centered {
@@ -87,9 +87,9 @@ hr.star-primary:after {
 
 header {
     text-align: center;
-    color: #F5FAEF;
-    background: #FF4500;
-    background-image: url("../img/portfolio/CloudyCraft/realTimePortals.png");
+    color: #AFBBF2;
+    background: #7F0799;
+    background-image: url("../img/portfolio/AllStar/background.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 50% 50%;
@@ -182,7 +182,7 @@ header .intro-text .skills {
 .navbar-default,
 .navbar-inverse {
     border: 0;
-    background-color: #B23000;
+    background-color: #9649CB;
 }
 
 section {
@@ -195,12 +195,12 @@ section h2 {
 }
 
 .recoloredH2 {
-  color: #B23000;
+  color: #9649CB;
 }
 
 section.success {
-    color: #F5FAEF;
-    background: #FF4500;
+    color: #AFBBF2;
+    background: #7F0799;
     /*background-image: url("../img/dark_stripes.png");*/
 }
 
@@ -249,7 +249,7 @@ section.success {
     margin-top: -12px;
     text-align: center;
     font-size: 20px;
-    color: #F5FAEF;
+    color: #AFBBF2;
 }
 
 #portfolio .portfolio-item .portfolio-link .caption .caption-content i {
@@ -287,7 +287,7 @@ section.success {
 .btn-outline:active,
 .btn-outline.active {
     border: solid 2px #000;
-    color: #FF4500;
+    color: #7F0799;
     background: #000;
 }
 
@@ -340,7 +340,7 @@ section.success {
 }
 
 .floating-label-form-group-with-focus label {
-    color: #FF4500;
+    color: #7F0799;
 }
 
 form .row:first-child .floating-label-form-group {
@@ -348,7 +348,7 @@ form .row:first-child .floating-label-form-group {
 }
 
 footer {
-    color: #F5FAEF;
+    color: #AFBBF2;
 }
 
 footer h3 {
@@ -357,7 +357,7 @@ footer h3 {
 
 footer .footer-above {
     padding-top: 50px;
-    background-color: #B23000;
+    background-color: #9649CB;
 }
 
 footer .footer-col {
@@ -366,14 +366,14 @@ footer .footer-col {
 
 footer .footer-below {
     padding: 25px 0;
-    background-color: #B23000;
+    background-color: #9649CB;
 }
 
 .btn-social {
     display: inline-block;
     width: 120px;
     height: 120px;
-    border: 2px solid #F5FAEF;
+    border: 2px solid #AFBBF2;
     border-radius: 100%;
     text-align: center;
     font-size: 90px;
@@ -423,7 +423,7 @@ footer .footer-below {
 }
 
 .portfolio-modal .modal-content .row{
-  background-color: #F5FAEF;
+  background-color: #AFBBF2;
 }
 
 .portfolio-modal .modal-content h2 {
@@ -440,7 +440,7 @@ footer .footer-below {
 }
 
 .left-border{
-  border-left-color: #FF4500;
+  border-left-color: #7F0799;
   border-left-style: solid;
   border-left-width: thick;
 }
@@ -474,7 +474,7 @@ footer .footer-below {
     width: 1px;
     height: 75px;
     margin-left: 35px;
-    background-color: #B23000;
+    background-color: #9649CB;
     -webkit-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
@@ -484,7 +484,7 @@ footer .footer-below {
     z-index: 1052;
     width: 1px;
     height: 75px;
-    background-color: #B23000;
+    background-color: #9649CB;
     -webkit-transform: rotate(90deg);
     -ms-transform: rotate(90deg);
     transform: rotate(90deg);
