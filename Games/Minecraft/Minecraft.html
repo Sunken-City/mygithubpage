@@ -97,17 +97,19 @@
             <div class="row">
                 <div class="col-lg-4">
                     <p>
-                      AllStar is a multiplayer couch-competitive preparathon game where players build up spaceships to compete in a gauntlet of minigames.
-                      The game was created for my Master's Thesis, built from the ground up using my own homemade engine, written in C++ and using OpenGL for rendering.
-                    </br>
-                      The game has two phases, the Assembly phase and the Challenge phase. Players start in Assembly mode, where they are dropped into an open arena.
-                     </p>
+                      Minecraft is an open-world sandbox game where players can build, explore, craft, and battle to their heart's content.
+                      I joined the team in 2017 as part of the Graphics Team, working on the Super Duper graphics pack.
+                      When the team eventually put the project on hold, I transferred over to the Vanilla Gameplay team to collaborate with
+                      designers and focus on creating great gameplay experiences.
+                   </p>
                 </div>
                 <div class="col-lg-4">
                     <p>
-                      Players are given 5 minutes to roam around the arena and collect various pickups and equipment for their ships, fight AI enemies and players, and prepare for the unknown challenges upcoming Challenge Phase.
-                      Once the 5 minutes are up, players are thrown into a gauntlet of 3 random minigames, using their custom built ships to compete. Whoever wins the most points during the minigames will
-                      be crowned the winner!
+                      I've been working on gameplay for multiple major updates,
+                      including "Update Aquatic" and "Village & Pillage", challenging myself with as many different parts of the codebase as
+                      I can. So far I've been able to add new world generation techniques, mobs, biomes, blocks, structures and more. I've also
+                      added data driven components and behaviors for mobs with 3rd party content creators in mind, helping us to iterate quicker
+                      and build faster while simultaneously enabling our community to do even more with our game!
                     </p>
                 </div>
                 <div class="col-lg-4 left-border">
@@ -119,13 +121,13 @@
                             </strong>
                         </li>
                         <li>Date:
-                            <strong>April 2017</strong>
+                            <strong>September 2017</strong>
                         </li>
                         <li>Team Size:
-                          <strong>Solo</strong>
+                          <strong>100+</strong>
                         </li>
                         <li>Languages and Technologies Used:
-                            <strong>C++, OpenGL</strong>
+                            <strong>C++, Git, Visual Studio, DirectX 11/12</strong>
                         </li>
                         <li>
                           <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -189,15 +191,15 @@
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#coloredLighting" class="portfolio-link" data-toggle="modal">
+            <a href="#dolphinTreasure" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Colored Lighting</h3></div>
+                  <div><h3>Dolphin Treasure Location</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/Minecraft/dolphinTreasure_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
@@ -213,15 +215,15 @@
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#debugging" class="portfolio-link" data-toggle="modal">
+            <a href="#pillagerOutposts" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Debugging</h3></div>
+                  <div><h3>Pillager Outposts</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/Minecraft/pillagerOutposts_min.gif" class="img-responsive" alt="">
             </a>
           </div>
         </div>
@@ -294,7 +296,7 @@
                               Despite being the newest member of the Gameplay Team, I was able to rapidly ramp up in the space, gain the support and knowledge I needed from others, and implement this major refactor.
                               We ultimately solved the problem by creating an "extra block" layer for chunks that could hold extra blocks, along with helper functions to make finding and accessing the block
                               you were looking for easy. By swapping over many of the checks for water blocks in spaces to a new "find water at this position" call, I was able to maintain the functionality
-                              of the previous code without sacrificing readability, which expedited the refactor of this hard-coded assumption.                              
+                              of the previous code without sacrificing readability, which expedited the refactor of this hard-coded assumption.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -373,7 +375,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="coloredLighting" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="dolphinTreasure" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -382,16 +384,21 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Colored Lighting</h2>
+                            <h2>Dolphin Treasure Location</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/coloredLighting.gif">
-                              <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/coloredLighting_min.gif">
+                            <a href="../../img/portfolio/Minecraft/dolphinTreasure.gif">
+                              <img src="../../img/portfolio/Minecraft/dolphinTreasure_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/Minecraft/dolphinTreasure_min.gif">
                             </a>
                             <p class="left-align">
-
+                              As part of their debut in "Update Aquatic", dolphins can be bribed with a fresh fish to lead you towards treasure!
+                              I programmed this behavior so dolphins can help you find shipwrecks or sunken ruins that you might have easily missed while swimming on the surface.
                             </p>
                             <p class="left-align">
-
+                              When a dolphin is bribed and the behavior trigers, I do a quick search to find the nearest available underwater treasure, as predetermined by
+                              world generation. Thanks to our use of perlin noise for structure generation, I was able to use this "mathematical predestination" to find where we
+                              planned to put one of those features, even if it didn't exist yet. Once I had the coordinates of the location, I'd get a direct vector to the structure
+                              and check to see if it was close enough to pathfind to. If it wasn't, I'd have the dolphin path as far as it could in the correct direction, then give up
+                              after it realized a single fish wasn't worth the journey. Perhaps another might persuade it to give you a little more guidance?
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
@@ -437,7 +444,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="debugging" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="pillagerOutposts" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -446,25 +453,25 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Debugging</h2>
+                            <h2>Pillager Outposts</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalDebuggingRendering.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif">
+                            <a href="../../img/portfolio/Minecraft/pillagerOutposts.gif">
+                              <img src="../../img/portfolio/Minecraft/pillagerOutposts_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/Minecraft/pillagerOutposts_min.gif">
                             </a>
                             <p class="left-align">
-                              While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.
+                              Pillager Outposts are menacing structures filled with Pillagers that spawn in the overworld as part of the "Village & Pillage" update.
+                              Players can raid the structure to take out the Pillager Captain at the top, earning them the "Bad Omen" mob effect used to trigger a raid.
                             </p>
                             <p class="left-align">
-                              I wrote a simple profiler during the initial development to figure out where I was spending my time each frame, which helped me root out a few problems with my chunk management.
-                              This helped me to prove what parts of my code weren't performant, and helped me to prove when assumptions I was making were valid or invalid, helping me to better understand my codebase.
-                              Along the bottom left of this GIF, you can see a series of extra render targets (You can click on the GIF to make it larger!). The most important one is the 2nd from the left, however.
+                              As part of our co-development with the Java Minecraft team, this feature involved a lot of reinterpretation and negotiation as I brought it
+                              to life in the Bedrock codebase. At the time, the "Beards and Shavers" system wasn't implemented in Bedrock, nor was it scheduled for a few
+                              months, and I had to figure out how to resolve placement issues in the world without being able to modify terrain before placement. Unlike
+                              previous structures that would just build a supporting foundation of cobblestone, I opted to "pull-down" certain blocks to help compensate
+                              for uneven terrain. This way, the tower's wooden support pillars would always line up with the ground, creating a more believable structure.
+                              Due to differences in monster spawning in Java and Bedrock, I programmed for a set number of Pillagers to spawn at
+                              designer-specified locations. This ensured that the first encounter with each outpost would be consistent, while still
+                              allowing for enemies to respawn if players were itching for more fighting.
                             </p>
-                            <p class="left-align">
-                              The 2nd from the left is my portal depth buffer, a second color target that I have attached to the first pass of the shader, where it writes out the depth of any portal values, and writes
-                              the max depth for any geometry that isn't a portal. This target is used in the second pass of the shader, and is how I determine what can be drawn in the portal area. Only things behind
-                              this portal are able to be drawn, and since everything else that's not a portal is at max depth, nothing can be drawn behind it, making this color target function like a combination of stencil and depth buffer.
-                            </p>
-
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
