@@ -153,15 +153,15 @@
         </div>
         <div class="row">
           <div class="col-sm-4 portfolio-item">
-            <a href="#portalCreation" class="portfolio-link" data-toggle="modal">
+            <a href="#waterMechanics" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Portal Creation</h3></div>
+                  <div><h3>Water Mechanics</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/Minecraft/waterMechanics_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
@@ -252,7 +252,7 @@
                         <a href="https://www.linkedin.com/in/anthonycloudy" class="btn-social btn-outline"><i class="fa fa-fw fa-linkedin"></i></a>
                       </li>
                       <li>
-                        <a href="mailto:acloudy@smu.edu" class="btn-social btn-outline"><i class="fa fa-fw fa-envelope-o"></i></a>
+                        <a href="mailto:anthonycloudy@outlook.com" class="btn-social btn-outline"><i class="fa fa-fw fa-envelope-o"></i></a>
                       </li>
                     </ul>
                   </div>
@@ -269,7 +269,7 @@
     </div>
 
     <!-- Portfolio Modals -->
-    <div class="portfolio-modal modal fade" id="portalCreation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="waterMechanics" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -278,16 +278,23 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Portal Creation</h2>
+                            <h2>Water Mechanics</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalCreation.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalCreation_min.gif">
+                            <a href="../../img/portfolio/Minecraft/waterMechanics.gif">
+                              <img src="../../img/portfolio/Minecraft/waterMechanics_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/Minecraft/waterMechanics_min.gif">
                             </a>
                             <p class="left-align">
-
+                              Prior to "Update Aquatic", any blocks placed underwater would have a pocket of air surrounding them.
+                              I worked on adding support for two blocks co-existing in the same place so that we could put water inside of other blocks, which resulted in a lot of fun gameplay opportunities!
                             </p>
                             <p class="left-align">
-
+                              This is one of the features I'm the most proud of working on. Minecraft was built around an assumption of one block per coordinate in a chunk,
+                              and the addition of water inside of other blocks would not only create a large amount of code churn, but would involve a rework of the legacy water code.
+                              When I started the work, I was informed that a majority of our update depended on this feature being delivered on time and of high quality, or else we might miss the milestone.
+                              Despite being the newest member of the Gameplay Team, I was able to rapidly ramp up in the space, gain the support and knowledge I needed from others, and implement this major refactor.
+                              We ultimately solved the problem by creating an "extra block" layer for chunks that could hold extra blocks, along with helper functions to make finding and accessing the block
+                              you were looking for easy. By swapping over many of the checks for water blocks in spaces to a new "find water at this position" call, I was able to maintain the functionality
+                              of the previous code without sacrificing readability, which expedited the refactor of this hard-coded assumption.                              
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
