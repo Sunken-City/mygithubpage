@@ -218,7 +218,7 @@
               <img src="../../img/portfolio/AllStar/wormholes_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-        <!--    <div class="col-sm-4 portfolio-item">
+        <div class="col-sm-4 portfolio-item">
             <a href="#shields" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
@@ -230,7 +230,7 @@
               <img src="../../img/portfolio/AllStar/shields_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-        <div class="col-sm-4 portfolio-item">
+        <!--    <div class="col-sm-4 portfolio-item">
             <a href="#debugging" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
@@ -468,9 +468,22 @@
                               <img src="../../img/portfolio/AllStar/shields_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/shields_min.gif">
                             </a>
                             <p class="left-align">
-
+                              Each player has a shield to protect them from some initial damage when engaging in combat. The shield recovers energy at a steady rate,
+                              but stops recovering for 3 seconds whenever the player takes damage.
                             </p>
                             <p class="left-align">
+                              I had to do a lot of iteration with shields in AllStar, as initially they had absorbed too much damage and would widen a skill or equipment gap into an unwinnable fight.
+                              Iteration helped me to realize that I wanted to use them as a buffer for player reaction time, and by making shield breaking a big event, players would have time to make a fight or flight decision during any combat.
+                              I added the visual effect to better convey when your shield breaks, as early playtesting showed that players weren't able to determine
+                              when they had their shield available. It creates a distinct effect that you notice anywhere on your viewport, without being obtrusive.
+                              Since health recovery options are scarce in AllStar, once your shield is down, all damage you take while it's down will be carried forward with you.
+                              By drawing attention to shield breaks, players can make the choice to double down and risk their ship for the rewards of combat, or quit while they're ahead and flee.
+                            </p>
+                            <p class="left-align">
+                              The visual effect when your shield breaks is a combination of multiple shader experiments I made. I was trying to
+                              figure out a way to make a full-screen pixelation fragment shader that became more pixelated the lower the fragment's Y-coordinate,
+                              and during my experiments I discovered that VHS-like noise effect. Jumping on the inspiration, I added in a brief chromatic abberation
+                              effect to further polish the visuals.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
