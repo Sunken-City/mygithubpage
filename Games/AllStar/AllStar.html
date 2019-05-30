@@ -195,7 +195,7 @@
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#jumpThrough" class="portfolio-link" data-toggle="modal">
+            <a href="#shipTrails" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
                   <div><h3>Ship Trails</h3></div>
@@ -203,34 +203,34 @@
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/AllStar/jumpThrough_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/shipTrails_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
-            <a href="#coloredLighting" class="portfolio-link" data-toggle="modal">
+            <a href="#wormholes" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Colored Lighting</h3></div>
+                  <div><h3>Wormholes</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/AllStar/coloredLighting_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/wormholes_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-          <div class="col-sm-4 portfolio-item">
-            <a href="#buildThrough" class="portfolio-link" data-toggle="modal">
+        <!--    <div class="col-sm-4 portfolio-item">
+            <a href="#shields" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Build Through</h3></div>
+                  <div><h3>Shields</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/AllStar/buildThroughPortal_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/shields_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-          <div class="col-sm-4 portfolio-item">
+        <div class="col-sm-4 portfolio-item">
             <a href="#debugging" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
@@ -241,7 +241,7 @@
               </div>
               <img src="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif" class="img-responsive" alt="">
             </a>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
@@ -315,6 +315,7 @@
                               This was the best choice, as it not only gave every player one of the most satisfying ways to move in-game, but gave the game an incredible amount of depth. Combat was no longer just about who
                               had the better ship build, but more skill-oriented thanks to the teleport emphasising mobility, spacing, and trickery. As a limited resource, players have to think carefully about when and where
                               they use it, creating interesting choices in battle and exploration. No matter how slow of a ship you created, you always had a burst movement option to surprise opponents or get out of trouble.
+                              Battles transformed from spray-and-pray engagements into a struggle where players zip back and forth, teleporting to surprise an opponent and sneak in some damage before their target can react.
 
                               I learned firsthand that balance problems can be solved in vastly different ways, and what might appear to be an issue at first could be a brand new avenue for adding value and depth to your game.
                             </p>
@@ -374,7 +375,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="jumpThrough" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="shipTrails" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -383,21 +384,31 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Jumping Through</h2>
+                            <h2>Ship Trails</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/AllStar/jumpThrough.gif">
-                              <img src="../../img/portfolio/AllStar/jumpThrough_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/jumpThrough_min.gif">
+                            <a href="../../img/portfolio/AllStar/shipTrails.gif">
+                              <img src="../../img/portfolio/AllStar/shipTrails_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/shipTrails_min.gif">
                             </a>
                             <p class="left-align">
-                              Portals can exist on any blockface, even the above and below faces of a block.
-                              This allows the player to jump down a portal, adding creative ways to get around the world.
+                              All ships leave behind a colored trail in their wake that matches their ship color. This not only looks pretty and adds polish, but serves
+                              gameplay by making it easier to find other players in the arena.
                             </p>
                             <p class="left-align">
-                              While working on some of the portal physics, I had a bug where if there were blocks behind the portal I'd be unable to pass through, getting stuck inside of
-                              the blocks inside this dimension after starting to move into them. I knew I needed to resolve this issue by giving each of my preventative raycast points a sense of what world they were in.
-                              Before I start my preventative raycasts, I raycast from the player's center out to each of the 12 points on the bounding box, which gives me the world each of those endpoints is in.
-                              This way, when they start the raycast to see if the player can move without hitting anything, each of them checks against the correct world's blocks, allowing players to pass through solid blocks
-                              in one world into open air in another.
+                              With combat as a core aspect of AllStar's gameplay, I wanted to ensure that players would be able to bump into one another amidst the arena from
+                              time to time, sparking interesting decisions (fight or flight?) and interactions between players. By giving the ships trails, each ship leaves "ripples"
+                              in space, allowing any player who passes nearby to learn the direction towards a nearby enemy or player ship. This extends the visibility of a "near miss"
+                              of two ships passing by each other, making it easier to find and sneak up on an unsuspecting opponent.
+
+                              When looking at a screenshot of an AllStar ship battle, you can clearly see the last couple seconds of each ship's history, where they moved and how they
+                            </p>
+                            <p class="left-align">
+                              I also had to expand on my new particle system in my engine to support this feature, creating new Ribbon Particle rendering. This type of particle
+                              renders differently than the sprite based particles, but utilizes a lot of the same functionality. While the ships travel, they drop behind points
+                              in space like a standard particle emitter, but instead of spawning particles at those locations, I instead use them to construct a mesh on the fly.
+                              By drawing quads between each of the points, I'm able to take the path the ship took and render the trail along its past positions. When the ship
+                              makes an important movement, such as teleporting, I drop an extra point to ensure that the ship's motion is captured and rendered appropriately.
+                              Because this extends the regular particle functionality, I leveraged the age per-particle and faded out the ship's trail towards the end of its lifetime,
+                              shrinking both the width of the line segment as well as reducing the alpha.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -406,7 +417,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="coloredLighting" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="wormholes" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -415,21 +426,24 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Colored Lighting</h2>
+                            <h2>Wormholes</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/AllStar/coloredLighting.gif">
-                              <img src="../../img/portfolio/AllStar/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/coloredLighting_min.gif">
+                            <a href="../../img/portfolio/AllStar/wormholes.gif">
+                              <img src="../../img/portfolio/AllStar/wormholes_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/wormholes_min.gif">
                             </a>
                             <p class="left-align">
-                              I added colored lighting to the game as well.
-                              These colors mix together as they propogate throughout the world, capable of lighting blocks with any 24-bit RGB color.
+                              As part of the procedurally-generated arena of Assembly Mode, wormholes can spawn on the map, linking two random points on the map together.
+                              Going into the center of one will teleport you to the other, and any objects or entities can travel through them. They pull anything nearby into their
+                              center, which is a problem if you cross paths with their red-colored variant, the Black Hole, which deals damage instead of teleporting you.
                             </p>
                             <p class="left-align">
-                              Colored lights also propogate across portal boundaries as well!
-                              Since the light propogation uses an abstracted version of the blocks to provide seamless transitions across chunk boundaries,
-                              I was able to expand that to support portals. Whenever a block attempts to grab one of it's neighbors,
-                              I check to see if there's a portal on the face that I'm about to cross. If so, we swap dimensions and continue propogation.
-                              Because of the abstract representation of blocks I built, this was a much easier problem to solve than it would appear.
+                              To make the wormholes feel more powerful, I added a vertex-pulling effect that makes any nearby objects appear to be pulled towads the center of the wormhole.
+                              I made the default vertex shader for all entities in-game take in a uniform block of the wormhole positions on the map, and then compared the current vertex against that list.
+                              Since all of my wormholes are the same size, I was able to make a quick distance check to see if I was within the radius of that wormhole. If this vertex happened to be, I would
+                              begin blending that position towards the center of the vertex, giving the object the appearance that it was getting pulled into the wormhole with a light-bending sort of effect.
+                              These changes were purely visual, as modifying the colliders of the ships and bullets would actually look incorrect, as all entities get pulled towards the wormhole at the same rate.
+                              I did, however, add a physical pull so that anything would feel like it was getting sucked in to match the visuals. I also gave a velocity boost to the ship when it was exiting the
+                              wormhole to ensure that nothing would end up trapped in between the wormholes, being juggled for all eternity.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
@@ -439,7 +453,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="buildThrough" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="shields" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -448,21 +462,15 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Building Through Portals</h2>
+                            <h2>Shields</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/AllStar/buildThroughPortal.gif">
-                              <img src="../../img/portfolio/AllStar/buildThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/buildThroughPortal_min.gif">
+                            <a href="../../img/portfolio/AllStar/shields.gif">
+                              <img src="../../img/portfolio/AllStar/shields_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/shields_min.gif">
                             </a>
                             <p class="left-align">
-                              When looking through a portal, you can dig and place blocks through the portal into the other world.
-                              If you open up a portal into a wall deep underground, you can dig a little crawl space out through the portal to pass through.
+
                             </p>
                             <p class="left-align">
-                              This is one of the most exciting ideas I had about the real-time nether portals when I began designing how they would work.
-                              The idea that if I opened a portal somewhere that was buried underground, I would be able to dig a crawlspace out through the portal to enter the other world.
-                              This works in game because I refactored my Amanatides-Woo Raycast function to account for portals, such that they can cross portal boundaries and begin interacting with the other world.
-                              Since my block digging and placing uses this raycast, adding in support for portals allowed the raycast to begin working across boundaries immediately.
-                              Although it definitely needs some polish to be a gameplay feature that users understand, the concept works just like it should and enables portals to be flexible for users without automatically destroying blocks in the other world.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
