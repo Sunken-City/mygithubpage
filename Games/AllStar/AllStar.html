@@ -163,7 +163,6 @@
           <div class="col-lg-12 text-center">
             <iframe width="560" height="315" src="https://www.youtube.com/embed/KZR1ysULgjw" frameborder="0" allowfullscreen></iframe>
           </div>
-          <!--
         <div class="row">
           <div class="col-lg-12 text-center">
             <h2>Features</h2>
@@ -172,39 +171,39 @@
         </div>
         <div class="row">
           <div class="col-sm-4 portfolio-item">
-            <a href="#portalCreation" class="portfolio-link" data-toggle="modal">
+            <a href="#teleportation" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Portal Creation</h3></div>
+                  <div><h3>Teleportation</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/teleportation_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
             <a href="#passThrough" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Changing Dimensions</h3></div>
+                  <div><h3>Weapons</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/weapons_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
             <a href="#jumpThrough" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Jumping Through</h3></div>
+                  <div><h3>Ship Trails</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/jumpThrough_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/jumpThrough_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
@@ -216,7 +215,7 @@
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/coloredLighting_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
@@ -228,7 +227,7 @@
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/buildThroughPortal_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/buildThroughPortal_min.gif" class="img-responsive" alt="">
             </a>
           </div>
           <div class="col-sm-4 portfolio-item">
@@ -240,10 +239,9 @@
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-        -->
         </div>
       </div>
     </section>
@@ -289,7 +287,7 @@
     </div>
 
     <!-- Portfolio Modals -->
-    <div class="portfolio-modal modal fade" id="portalCreation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="teleportation" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -298,22 +296,27 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Portal Creation</h2>
+                            <h2>Teleportation</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalCreation.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalCreation_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalCreation_min.gif">
+                            <a href="../../img/portfolio/AllStar/teleportation.gif">
+                              <img src="../../img/portfolio/AllStar/teleportation_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/teleportation_min.gif">
                             </a>
                             <p class="left-align">
-                              Players can open a portal to an alternate dimension on any block face.
-                              These are thin portals that can exist on any of the block faces in the game, even thin air!
-                              The gif above shows how to create such a portal, with no frame required like traditional nether portals.
+                              Players can teleport using the left trigger, warping forward a fixed distance in the direction of their choosing.
+                              Teleporting can be used to avoid enemies and obstacles, and gives all ship builds a quick movement option.
                             </p>
                             <p class="left-align">
-                              I implemented portals as a bitflag attached to each block, with a bit toggled on or off depending on which of the 6 faces of the block had portals.
-                              This allowed for me to make quick checks to find out which portals were active and inactive by using bitmasking.
-                              Since a lot of checks are made each frame to see whether or not a block has portals, I knew I needed the speed of a bitwise operator to keep the game performant.
-                              The other reason I went for bitflags involved the size of the blocks themselves, as the game currently holds about 1000 chunks in memory at any given time.
-                              I've kept my blocks as flyweight as possible, as there are generally millions of them in memory making every byte add up quickly.
+                              This feature ended up being one of my favorite learnings about game design that I took away from working on this game.
+
+                              I had initially created this as one of the original active pickups for the game, along side some of the other active abilities.
+                              When I playtested the game with all of the new abilities, however, this ended up not only the most fun option, but it was the best-in-slot ability and blew the other abilities out of the water.
+                              While I could have attempted to balance this ability with the others, I realized that I'd stumbled upon something awesome, and I decided to promote it to a native movement option for the game.
+
+                              This was the best choice, as it not only gave every player one of the most satisfying ways to move in-game, but gave the game an incredible amount of depth. Combat was no longer just about who
+                              had the better ship build, but more skill-oriented thanks to the teleport emphasising mobility, spacing, and trickery. As a limited resource, players have to think carefully about when and where
+                              they use it, creating interesting choices in battle and exploration. No matter how slow of a ship you created, you always had a burst movement option to surprise opponents or get out of trouble.
+
+                              I learned firsthand that balance problems can be solved in vastly different ways, and what might appear to be an issue at first could be a brand new avenue for adding value and depth to your game.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -331,21 +334,38 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Changing Dimensions</h2>
+                            <h2>Weapons</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/passThroughPortal.gif">
-                              <img src="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/passThroughPortal_min.gif">
+                            <a href="../../img/portfolio/AllStar/weapons.gif">
+                              <img src="../../img/portfolio/AllStar/weapons_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/weapons_min.gif">
                             </a>
                             <p class="left-align">
-                              Players are able to pass through any portals to swap dimensions. Entering the dimension in the portal is as simple as walking through the portal (or falling through it!).
-                              As soon as the player's midpoint passes through the middle of a portal, they swap dimensions, and can move freely about the other world.
+                              AllStar has three different weapon pickups aside from the default laser gun.
+                              The Wave Gun fires three shots that all converge on a point, which encourages targeting enemies in the sweet spot for massive damage.
+                              The Spread Shot shoots a multitude of close-range bullets, giving players who enjoy up-close and personal battles an advantage.
+                              The Missile Launcher unloads missiles that home in on nearby enemies, which create damage-on-contact explosions in their wake.
                             </p>
                             <p class="left-align">
-                              I wrote the physics for the player using preventative instead of corrective physics (I prevent the player from getting inside of blocks, instead of constantly correcting them whenever they do).
-                              This was one of the hardest parts of the project, as I'd never implemented it before, and it sounded a lot easier than it actually turned out to be.
-                              After a few long sessions, I was able to get it into a good state, where it used small raytraces from the bounds of the box (12 points: the corners and 4 around the box's waist) to determine
-                              whether or not the motion would collide with a block. This actually ended up being the secret to getting my physics to work with crossing portal boundaries, because I was able to
-                              refactor my raycast function to account for portal boundaries, swapping dimensions if it ever needed to while determining collisions.
+                              During assembly mode, I wanted a series of interesting trade-offs while building your ship, giving players the opportunity to build their ships around different play styles.
+                              When it came time to create weapons, I took some inspiration from one of my favorite game designers, Masahiro Sakurai. In the Super Smash Bros. series of games, there exist three characters (Marth, Roy, and Lucina)
+                              who, through different iterations in the series, all had the same exact moveset. However, by changing the "sweet spot" on their swords (which part of their blade did the most damage) they all managed to derive completely
+                              different playstyles from what was essentially the same character. By changing up the incentives for long-range versus short-range combat on each character, Sakurai was able to stretch his development resources and provide meaningful choices for players.
+                              Considering I was facing a short timetable for the project, I focused on creating a weapon for each of those distinct playstyles, covering a large spectrum of gameplay options with only three equippable guns.
+                            </p>
+                            <p class="left-align">
+                              The Spread Shot was the "Roy" gun, where I wanted to create a weapon that encouraged close-range combat. The inclusion of this gun gave more meaning to the Tank Chassis, which moved slowly but could take a lot of hits, and players could
+                              combine this ability to shrug off enemy bullets while approaching with the punishing damage of a point-blank Spread Shot attack. This also empowered stealth builds which utilized the Cloak passive (granting invisibility while motionless) and
+                              hiding in nebula, making sneak attacks easier to pull off on unsuspecting opponents.
+                            </p>
+                            <p class="left-align">
+                              For players who wanted to focus on mobility and staying just out of reach, I added the Wave Gun, inspired by Marth's spacing-oriented gameplay. The weapon features three shots that all converge on a focal point, and
+                              skilled players who are able to keep their opponents in that sweet spot can take advantage of the increased damage output. Builds with more mobility, such as those using the Speed Chassis (which improves base Top Speed and Acceleration),
+                              are able to benefit from the weapon the most, avoiding enemy fire while swooping in for the quick sweetspot kill.
+                            </p>
+                            <p class="left-align">
+                              Finally, for players who pine for a more generalist playstyle, I created the Missile Launcher. Because Lucina had no sweetspot on her sword in Super Smash Bros., she was able to adapt to any situation her opponents put her in, at the expense of
+                              specializing in one area. The Missile Launcher provided a good option for this playstyle, and also made for an accessible choice for users newer to twin-stick shooters by lessening the need for precise aiming. This weapon also enhanced the
+                              Black Hole Chassis (providing a homing boost for your bullets, at the cost of bullets homing in more easily on you), making the missiles even more deadly on the battlefield.
                             </p>
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                         </div>
@@ -365,8 +385,8 @@
                         <div class="modal-body">
                             <h2>Jumping Through</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/jumpThrough.gif">
-                              <img src="../../img/portfolio/CloudyCraft/jumpThrough_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/jumpThrough_min.gif">
+                            <a href="../../img/portfolio/AllStar/jumpThrough.gif">
+                              <img src="../../img/portfolio/AllStar/jumpThrough_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/jumpThrough_min.gif">
                             </a>
                             <p class="left-align">
                               Portals can exist on any blockface, even the above and below faces of a block.
@@ -397,8 +417,8 @@
                         <div class="modal-body">
                             <h2>Colored Lighting</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/coloredLighting.gif">
-                              <img src="../../img/portfolio/CloudyCraft/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/coloredLighting_min.gif">
+                            <a href="../../img/portfolio/AllStar/coloredLighting.gif">
+                              <img src="../../img/portfolio/AllStar/coloredLighting_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/coloredLighting_min.gif">
                             </a>
                             <p class="left-align">
                               I added colored lighting to the game as well.
@@ -430,8 +450,8 @@
                         <div class="modal-body">
                             <h2>Building Through Portals</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/buildThroughPortal.gif">
-                              <img src="../../img/portfolio/CloudyCraft/buildThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/buildThroughPortal_min.gif">
+                            <a href="../../img/portfolio/AllStar/buildThroughPortal.gif">
+                              <img src="../../img/portfolio/AllStar/buildThroughPortal_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/buildThroughPortal_min.gif">
                             </a>
                             <p class="left-align">
                               When looking through a portal, you can dig and place blocks through the portal into the other world.
@@ -463,8 +483,8 @@
                         <div class="modal-body">
                             <h2>Debugging</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/CloudyCraft/portalDebuggingRendering.gif">
-                              <img src="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/CloudyCraft/portalDebuggingRendering_min.gif">
+                            <a href="../../img/portfolio/AllStar/portalDebuggingRendering.gif">
+                              <img src="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif">
                             </a>
                             <p class="left-align">
                               While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.
