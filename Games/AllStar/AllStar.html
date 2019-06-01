@@ -230,18 +230,18 @@
               <img src="../../img/portfolio/AllStar/shields_min.gif" class="img-responsive" alt="">
             </a>
           </div>
-        <!--    <div class="col-sm-4 portfolio-item">
-            <a href="#debugging" class="portfolio-link" data-toggle="modal">
+        <div class="col-sm-4 portfolio-item">
+            <a href="#challengePhase" class="portfolio-link" data-toggle="modal">
               <div class="caption">
                 <div class="caption-content">
-                  <div><h3>Debugging</h3></div>
+                  <div><h3>Challenge Phase</h3></div>
                   <i class="fa fa-newspaper-o fa-3x"></i>
                   <div>Read More</div>
                 </div>
               </div>
-              <img src="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif" class="img-responsive" alt="">
+              <img src="../../img/portfolio/AllStar/challengePhase_min.gif" class="img-responsive" alt="">
             </a>
-          </div> -->
+          </div>
         </div>
       </div>
     </section>
@@ -493,7 +493,7 @@
             </div>
         </div>
     </div>
-    <div class="portfolio-modal modal fade" id="debugging" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="portfolio-modal modal fade" id="challengePhase" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-content">
             <div class="container">
                 <div class="row">
@@ -502,25 +502,23 @@
                     </div>
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Debugging</h2>
+                            <h2>Challenge Phase</h2>
                             <hr class="star-primary">
-                            <a href="../../img/portfolio/AllStar/portalDebuggingRendering.gif">
-                              <img src="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/portalDebuggingRendering_min.gif">
+                            <a href="../../img/portfolio/AllStar/challengePhase.gif">
+                              <img src="../../img/portfolio/AllStar/challengePhase_min.gif" class="img-responsive img-centered" alt="../../img/portfolio/AllStar/challengePhase_min.gif">
                             </a>
                             <p class="left-align">
-                              While working on real-time portals, I wrote a few debugging tools to help me understand the problem space better, as well as to resolve issues with the system itself.
+                              The Challenge Phase is the gauntlet of minigames that follow the Assembly Phase. Players are thrown into 3 random minigames that test various skills, giving
+                              a fair chance to all kinds of ship builds. Whoever wins the most minigames will be victorious!
                             </p>
                             <p class="left-align">
-                              I wrote a simple profiler during the initial development to figure out where I was spending my time each frame, which helped me root out a few problems with my chunk management.
-                              This helped me to prove what parts of my code weren't performant, and helped me to prove when assumptions I was making were valid or invalid, helping me to better understand my codebase.
-                              Along the bottom left of this GIF, you can see a series of extra render targets (You can click on the GIF to make it larger!). The most important one is the 2nd from the left, however.
+                              The ultimate goal of the Assembly Phase is to prepare for the Challenge Phase, which rewards players based on a combination of how prepared they are and how skilled their play is.
+                              Instead of doing a single minigame, where the winner could be decided solely on the luck of the draw, I decided to go with a gauntlet of three minigames. This way, a player who has an unbalanced
+                              ship, such as an all-speed build, would have less of a chance of winning by virtue of competing solely in speed-focused minigames, and is forced to use their speed creatively to win other modes.
+                              There are minigames that prioritize the three different stat categories (Attack, Defense, and Speed), as well as a few gamemodes that have no focus (such as the Coin Grab minigame) giving room for
+                              other players to catch up and pit players' skills against one another. The minigames struck a balance between luck and skill, giving clear advantages to players with specific builds at random, but leaving
+                              enough room for any skilled player to upset the luck of the draw and grasp victory. 
                             </p>
-                            <p class="left-align">
-                              The 2nd from the left is my portal depth buffer, a second color target that I have attached to the first pass of the shader, where it writes out the depth of any portal values, and writes
-                              the max depth for any geometry that isn't a portal. This target is used in the second pass of the shader, and is how I determine what can be drawn in the portal area. Only things behind
-                              this portal are able to be drawn, and since everything else that's not a portal is at max depth, nothing can be drawn behind it, making this color target function like a combination of stencil and depth buffer.
-                            </p>
-
                             <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
                             </form>
                         </div>
