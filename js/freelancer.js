@@ -35,3 +35,28 @@ $('body').scrollspy({
 $('.navbar-collapse ul li a').click(function() {
     $('.navbar-toggle:visible').click();
 });
+
+$(function() {
+
+          //<!--Conditional text from https://stackoverflow.com/a/17325405/2619871 -->
+          var deviceAgent = navigator.userAgent.toLowerCase();
+
+          var isTouchDevice = ('ontouchstart' in document.documentElement) ||
+          (deviceAgent.match(/(iphone|ipod|ipad)/) ||
+          deviceAgent.match(/(android)/)  ||
+          deviceAgent.match(/(iemobile)/) ||
+          deviceAgent.match(/iphone/i) ||
+          deviceAgent.match(/ipad/i) ||
+          deviceAgent.match(/ipod/i) ||
+          deviceAgent.match(/blackberry/i) ||
+          deviceAgent.match(/bada/i));
+
+          if (isTouchDevice) {
+            var textHint = document.getElementById("touchHint");
+            textHint.textContent += "Click on the gifs to learn more about each feature";
+
+            var youtubeVideo = document.getElementById("youtube");
+            youtubeVideo.width = 300;
+            youtubeVideo.height = 169;
+          }
+});
