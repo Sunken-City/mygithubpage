@@ -36,6 +36,7 @@ $('.navbar-collapse ul li a').click(function() {
     $('.navbar-toggle:visible').click();
 });
 
+// Add hints on mobile since hover doesn't exist.
 $(function() {
 
           //<!--Conditional text from https://stackoverflow.com/a/17325405/2619871 -->
@@ -55,8 +56,11 @@ $(function() {
             var textHint = document.getElementById("touchHint");
             textHint.textContent += "Click on the gifs to learn more about each feature";
 
+            //prevent youtube videos from destroying the mobile view
             var youtubeVideo = document.getElementById("youtube");
-            youtubeVideo.width = 300;
-            youtubeVideo.height = 169;
+            if (youtubeVideo) {
+              youtubeVideo.width = 300;
+              youtubeVideo.height = 169;
+            }
           }
 });
