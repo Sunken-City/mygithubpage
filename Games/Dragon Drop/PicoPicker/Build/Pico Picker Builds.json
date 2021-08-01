@@ -1,0 +1,16 @@
+{
+"companyName": "Cloudy Games LLC",
+"productName": "Dragon Drop",
+"productVersion": "0.1",
+"dataUrl": "Pico Picker Builds.data.unityweb",
+"wasmCodeUrl": "Pico Picker Builds.wasm.code.unityweb",
+"wasmFrameworkUrl": "Pico Picker Builds.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Dark",
+"backgroundColor": "#231F20",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.4.28f1"
+}
