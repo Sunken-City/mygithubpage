@@ -1,3 +1,387 @@
+param(
+  [string]$Target = "apps/skill-tracker"
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+function Ensure-Dir([string]$Path) {
+  if (-not (Test-Path $Path)) { New-Item -ItemType Directory -Path $Path | Out-Null }
+}
+
+function Write-Utf8NoBom([string]$Path, [string]$Content) {
+  Ensure-Dir (Split-Path $Path -Parent)
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
+$root = (Get-Location).Path
+$dir = Join-Path $root $Target
+if (-not (Test-Path $dir)) {
+  throw "Target folder not found: $Target"
+}
+
+$vendorDir  = Join-Path $dir "vendor"
+$profileDir = Join-Path $dir "profile"
+$avatarDir  = Join-Path $profileDir "avatars"
+Ensure-Dir $vendorDir
+Ensure-Dir $avatarDir
+
+# Backup existing core files
+$stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
+$backupDir = Join-Path $dir ("_backup_" + $stamp)
+Ensure-Dir $backupDir
+$toBackup = @("index.html","app.js","app.css","sw.js","manifest.webmanifest","icon.svg")
+foreach ($f in $toBackup) {
+  $p = Join-Path $dir $f
+  if (Test-Path $p) { Copy-Item $p (Join-Path $backupDir $f) -Force }
+}
+
+# pako fallback (gzip) - keep as-is if already there
+$pakoPath = Join-Path $vendorDir "pako.min.js"
+if (-not (Test-Path $pakoPath)) {
+  try {
+    Invoke-WebRequest -Uri "https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js" -OutFile $pakoPath -UseBasicParsing | Out-Null
+  } catch {
+    Write-Utf8NoBom $pakoPath "/* pako download failed; sync code fallback unavailable. */"
+  }
+}
+
+# Profile avatar list + default placeholder
+$avatarsJson = Join-Path $profileDir "avatars.json"
+if (-not (Test-Path $avatarsJson)) {
+  Write-Utf8NoBom $avatarsJson @'
+{
+  "files": [
+    "default.svg"
+  ]
+}
+'@
+}
+
+$defaultAvatar = Join-Path $avatarDir "default.svg"
+if (-not (Test-Path $defaultAvatar)) {
+  Write-Utf8NoBom $defaultAvatar @'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0b0f19"/>
+  <circle cx="128" cy="118" r="54" fill="url(#g)"/>
+  <rect x="54" y="160" width="148" height="60" rx="30" fill="url(#g)"/>
+  <text x="128" y="128" text-anchor="middle" font-size="44" font-family="system-ui,Segoe UI,Arial" fill="#04160a" font-weight="900">P</text>
+</svg>
+'@
+}
+
+# icon.svg (no emoji to avoid encoding issues)
+Write-Utf8NoBom (Join-Path $dir "icon.svg") @'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="48" fill="#0b0f19"/>
+  <rect x="52" y="52" width="152" height="152" rx="40" fill="#22c55e"/>
+  <text x="128" y="152" text-anchor="middle" font-size="84" font-family="system-ui,Segoe UI,Arial" fill="#04160a" font-weight="900">XP</text>
+</svg>
+'@
+
+# manifest (scope stays folder-local)
+Write-Utf8NoBom (Join-Path $dir "manifest.webmanifest") @'
+{
+  "name": "Skill Tracker",
+  "short_name": "Skills",
+  "description": "Offline skill tracker (zero-backend).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "256x256", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
+'@
+
+# app.css (add avatar styles; keep everything ASCII)
+Write-Utf8NoBom (Join-Path $dir "app.css") @'
+:root{
+  --bg:#f6f7fb; --panel:#ffffff; --text:#0f172a; --muted:#475569; --border:rgba(15,23,42,.12);
+  --shadow:0 10px 28px rgba(2,6,23,.08);
+  --brand:#22c55e; --danger:#ef4444; --warn:#f59e0b;
+
+  --r:16px; --pad:14px; --tap:48px; --navH:70px;
+  color-scheme: light;
+}
+:root[data-theme="dark"]{
+  --bg:#070a12; --panel:#0b1222; --text:#e5e7eb; --muted:#9aa4b2; --border:rgba(226,232,240,.12);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --brand:#3ddc84;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:var(--bg); color:var(--text);
+}
+
+button,input,select,textarea{font:inherit}
+button{
+  min-height:var(--tap);
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:color-mix(in srgb, var(--panel) 88%, var(--bg));
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+button:active{transform:translateY(1px)}
+button[disabled]{opacity:.55; cursor:not-allowed; transform:none}
+
+.btn-primary{
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand));
+  border-color:color-mix(in srgb, var(--brand) 55%, var(--border));
+  color:#03120a;
+}
+.btn-danger{
+  background:color-mix(in srgb, var(--danger) 18%, var(--panel));
+  border-color:color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+.iconbtn{width:var(--tap); min-width:var(--tap); padding:0; display:grid; place-items:center}
+
+.input, select, textarea{
+  width:100%;
+  min-height:var(--tap);
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text);
+  padding:10px 12px;
+  outline:none;
+}
+textarea{min-height:110px; resize:vertical}
+
+.shell{min-height:100vh; display:flex; flex-direction:column}
+.header{
+  position:sticky; top:0; z-index:10;
+  background:color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:10px 14px;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+}
+
+.brand{display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer}
+.brandStack{display:flex; flex-direction:column; line-height:1.1}
+.brandName{font-weight:950; letter-spacing:.2px}
+.brandSub{font-size:12px; color:var(--muted); font-weight:800}
+
+.avatar{
+  width:40px; height:40px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 70%, white), var(--brand));
+  box-shadow:var(--shadow);
+  flex:0 0 auto;
+}
+.avatar img{width:100%; height:100%; object-fit:cover; display:block}
+
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:color-mix(in srgb, var(--panel) 85%, var(--bg));
+  color:var(--muted);
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.main{
+  width:min(980px, 100%);
+  margin:0 auto;
+  padding:14px 14px calc(var(--navH) + 90px);
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:var(--pad);
+  box-shadow:var(--shadow);
+}
+.stack{display:flex; flex-direction:column; gap:10px}
+.row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.grid{display:grid; gap:12px}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:740px){ .grid3{grid-template-columns:repeat(3,minmax(0,1fr))} }
+
+.h1{font-size:22px; font-weight:950; margin:0}
+.h2{font-size:16px; font-weight:900; margin:0}
+.p{margin:0; color:var(--muted)}
+.small{font-size:12px; color:var(--muted)}
+.hr{height:1px; background:var(--border); margin:6px 0}
+
+.progress{
+  height:10px; border-radius:999px;
+  background:color-mix(in srgb, var(--bg) 50%, var(--panel));
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.progress > div{
+  height:100%;
+  width:var(--w,0%);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 70%, white), var(--brand));
+}
+
+.nav{
+  position:fixed; left:0; right:0; bottom:0;
+  height:var(--navH);
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  padding:8px 10px max(8px, env(safe-area-inset-bottom));
+  background:color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  z-index:30;
+}
+.navBtn{
+  border:1px solid transparent;
+  border-radius:16px;
+  background:transparent;
+  display:flex; flex-direction:column;
+  justify-content:center; align-items:center;
+  gap:4px;
+  min-height:52px;
+  color:var(--muted);
+}
+.navBtn.active{
+  background:color-mix(in srgb, var(--panel) 78%, var(--bg));
+  border-color:var(--border);
+  color:var(--text);
+}
+.navEmoji{font-size:18px}
+.navLabel{font-size:11px; font-weight:900}
+
+.fab{
+  position:fixed;
+  right:16px;
+  bottom:calc(var(--navH) + 14px);
+  z-index:31;
+  width:60px; height:60px;
+  border-radius:20px;
+  border:1px solid color-mix(in srgb, var(--brand) 45%, var(--border));
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand));
+  color:#03120a; font-size:28px; font-weight:950;
+  box-shadow:var(--shadow);
+}
+
+.toastHost{
+  position:fixed;
+  top:10px; left:50%;
+  transform:translateX(-50%);
+  width:min(560px, calc(100% - 22px));
+  display:flex; flex-direction:column; gap:10px;
+  z-index:60;
+  pointer-events:none;
+}
+.toast{
+  pointer-events:none;
+  border-radius:18px;
+  border:1px solid var(--border);
+  background:color-mix(in srgb, var(--panel) 88%, var(--bg));
+  box-shadow:var(--shadow);
+  padding:12px 14px;
+}
+.toastTitle{font-weight:950; margin:0 0 2px}
+.toastMsg{margin:0; color:var(--muted); font-weight:750}
+
+.modalOverlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:grid; place-items:end center;
+  padding:16px;
+  z-index:80;
+}
+.modal{
+  width:min(720px, 100%);
+  background:var(--panel);
+  border-radius:22px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.modalHead{
+  padding:14px 14px 8px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.modalTitle{font-weight:950; font-size:16px; margin:0}
+.modalBody{padding:14px}
+.modalActions{
+  padding:14px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px;
+  justify-content:flex-end;
+}
+'@
+
+# sw.js (precache avatars.json + default avatar)
+Write-Utf8NoBom (Join-Path $dir "sw.js") @'
+const CACHE = "skill-tracker-v2";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./app.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./vendor/pako.min.js",
+  "./profile/avatars.json",
+  "./profile/avatars/default.svg"
+];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await c.addAll(ASSETS);
+    self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => (k === CACHE ? null : caches.delete(k))));
+    self.clients.claim();
+  })());
+});
+
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  e.respondWith((async () => {
+    const cached = await caches.match(req, { ignoreSearch: true });
+    if (cached) return cached;
+    try {
+      const fresh = await fetch(req);
+      const c = await caches.open(CACHE);
+      c.put(req, fresh.clone()).catch(() => {});
+      return fresh;
+    } catch {
+      return caches.match("./");
+    }
+  })());
+});
+'@
+
+# app.js (ASCII-only; emojis are runtime escapes; triangular leveling; Pico profile + random avatar; mojibake repair)
+Write-Utf8NoBom (Join-Path $dir "app.js") @'
 (() => {
   const STORAGE_KEY = "skill_tracker_save_v2";
   const MAX_LOG = 5000;
@@ -25,7 +409,7 @@
 
   function looksMojibake(s) {
     if (typeof s !== "string") return false;
-    return s.includes("Ãƒ") || s.includes("Ã¢") || s.includes("Ã°") || s.includes("Å¸");
+    return s.includes("Ã") || s.includes("â") || s.includes("ð") || s.includes("Ÿ");
   }
   function fixMojibake(s) {
     if (typeof s !== "string") return s;
@@ -1559,3 +1943,39 @@
   // pick avatar (once) and render
   loadAvatarListAndPickIfNeeded().finally(() => render());
 })();
+'@
+
+# index.html (leave yours alone if you customized; only ensure UTF-8 + scripts)
+# If you want, you can keep your existing index.html. We'll avoid overwriting it unless it doesn't exist.
+$indexPath = Join-Path $dir "index.html"
+if (-not (Test-Path $indexPath)) {
+  Write-Utf8NoBom $indexPath @'
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f19" />
+  <title>Skill Tracker</title>
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script defer src="./vendor/pako.min.js"></script>
+  <script defer src="./app.js"></script>
+</body>
+</html>
+'@
+}
+
+Write-Host ""
+Write-Host "Done. Patched: $Target" -ForegroundColor Green
+Write-Host "Backup of old files: $backupDir" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "Avatar folder: $Target/profile/avatars/" -ForegroundColor Cyan
+Write-Host "Avatar list:   $Target/profile/avatars.json" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Next: git add -A ; git commit -m ""Patch skill-tracker"" ; git push" -ForegroundColor Yellow

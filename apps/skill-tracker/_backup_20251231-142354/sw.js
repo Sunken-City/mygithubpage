@@ -1,4 +1,4 @@
-const CACHE = "skill-tracker-v2";
+const CACHE = "skill-tracker-v1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,9 +6,7 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./icon.svg",
-  "./vendor/pako.min.js",
-  "./profile/avatars.json",
-  "./profile/avatars/default.svg"
+  "./vendor/pako.min.js"
 ];
 
 self.addEventListener("install", (e) => {

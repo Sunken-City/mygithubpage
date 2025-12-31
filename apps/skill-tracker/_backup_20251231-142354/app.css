@@ -21,6 +21,7 @@ body{
   background:var(--bg); color:var(--text);
 }
 
+a{color:inherit}
 button,input,select,textarea{font:inherit}
 button{
   min-height:var(--tap);
@@ -44,7 +45,9 @@ button[disabled]{opacity:.55; cursor:not-allowed; transform:none}
   background:color-mix(in srgb, var(--danger) 18%, var(--panel));
   border-color:color-mix(in srgb, var(--danger) 35%, var(--border));
 }
-.iconbtn{width:var(--tap); min-width:var(--tap); padding:0; display:grid; place-items:center}
+.iconbtn{
+  width:var(--tap); min-width:var(--tap); padding:0; display:grid; place-items:center;
+}
 
 .input, select, textarea{
   width:100%;
@@ -67,23 +70,15 @@ textarea{min-height:110px; resize:vertical}
   padding:10px 14px;
   display:flex; justify-content:space-between; align-items:center; gap:10px;
 }
-
 .brand{display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer}
-.brandStack{display:flex; flex-direction:column; line-height:1.1}
-.brandName{font-weight:950; letter-spacing:.2px}
-.brandSub{font-size:12px; color:var(--muted); font-weight:800}
-
-.avatar{
-  width:40px; height:40px;
-  border-radius:14px;
-  overflow:hidden;
-  border:1px solid var(--border);
-  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 70%, white), var(--brand));
+.brandMark{
+  width:40px; height:40px; border-radius:14px;
+  display:grid; place-items:center;
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand));
+  color:#04160a; font-weight:900;
   box-shadow:var(--shadow);
-  flex:0 0 auto;
 }
-.avatar img{width:100%; height:100%; object-fit:cover; display:block}
-
+.brandName{font-weight:950; letter-spacing:.2px}
 .chip{
   display:inline-flex; align-items:center; gap:6px;
   padding:7px 10px;
