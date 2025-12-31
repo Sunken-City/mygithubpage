@@ -1,3 +1,423 @@
+param(
+  # If you KNOW the folder, set it, e.g. -TargetFolder "Games/skill-tracker"
+  [string]$TargetFolder = ""
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+function Ensure-Dir([string]$Path) {
+  if (-not (Test-Path $Path)) { New-Item -ItemType Directory -Path $Path | Out-Null }
+}
+
+function Write-Utf8NoBom([string]$Path, [string]$Content) {
+  Ensure-Dir (Split-Path $Path -Parent)
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
+function Find-TrackerFolder([string]$Root) {
+  $preferred = @("apps/skill-tracker", "Games/skill-tracker", "skill-tracker")
+  foreach ($p in $preferred) {
+    $full = Join-Path $Root $p
+    if (Test-Path (Join-Path $full "index.html")) { return $full }
+  }
+
+  # Heuristic search: folder containing "manifest.webmanifest" and "sw.js"
+  $candidates = Get-ChildItem -Path $Root -Directory -Recurse -ErrorAction SilentlyContinue |
+    Where-Object {
+      Test-Path (Join-Path $_.FullName "manifest.webmanifest") -and
+      Test-Path (Join-Path $_.FullName "sw.js") -and
+      Test-Path (Join-Path $_.FullName "app.js")
+    } |
+    Select-Object -First 1
+
+  if ($null -ne $candidates) { return $candidates.FullName }
+  return ""
+}
+
+$root = (Get-Location).Path
+$dir = ""
+
+if ($TargetFolder -and $TargetFolder.Trim().Length -gt 0) {
+  $dir = Join-Path $root $TargetFolder
+  if (-not (Test-Path $dir)) { throw "TargetFolder not found: $TargetFolder" }
+} else {
+  $dir = Find-TrackerFolder $root
+  if (-not $dir) { throw "Could not find your skill tracker folder. Re-run with -TargetFolder 'Games/skill-tracker' (or wherever it lives)." }
+}
+
+Write-Host "Using tracker folder: $dir" -ForegroundColor Cyan
+
+# Backup
+$stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
+$backupDir = Join-Path $dir ("_backup_" + $stamp)
+Ensure-Dir $backupDir
+@("index.html","app.js","app.css","sw.js","manifest.webmanifest","icon.svg") | ForEach-Object {
+  $p = Join-Path $dir $_
+  if (Test-Path $p) { Copy-Item $p (Join-Path $backupDir $_) -Force }
+}
+
+# Ensure folders
+Ensure-Dir (Join-Path $dir "vendor")
+Ensure-Dir (Join-Path $dir "profile/avatars")
+Ensure-Dir (Join-Path $dir "tools")
+
+# Download pako if missing (for gzip fallback)
+$pakoPath = Join-Path $dir "vendor/pako.min.js"
+if (-not (Test-Path $pakoPath)) {
+  try {
+    Invoke-WebRequest -Uri "https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js" -OutFile $pakoPath -UseBasicParsing | Out-Null
+    Write-Host "Downloaded pako.min.js" -ForegroundColor DarkGray
+  } catch {
+    Write-Utf8NoBom $pakoPath "/* pako download failed; sync code will fallback to plain base64 JSON. */"
+  }
+}
+
+# Default avatar SVG if missing
+$defaultAvatar = Join-Path $dir "profile/avatars/default.svg"
+if (-not (Test-Path $defaultAvatar)) {
+  Write-Utf8NoBom $defaultAvatar @'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="48" fill="#0b0f19"/>
+  <circle cx="128" cy="110" r="54" fill="#22c55e"/>
+  <rect x="54" y="160" width="148" height="60" rx="30" fill="#22c55e"/>
+  <text x="128" y="128" text-anchor="middle" font-size="44" font-family="system-ui,Segoe UI,Arial" fill="#04160a" font-weight="900">P</text>
+</svg>
+'@
+}
+
+# Generate avatars.json by scanning folder (no manual JSON editing)
+$avatarsDir = Join-Path $dir "profile/avatars"
+$avatarsJson = Join-Path $dir "profile/avatars.json"
+$files = Get-ChildItem -Path $avatarsDir -File -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -notmatch '^\.' } |
+  Where-Object { $_.Extension -match '\.(png|jpg|jpeg|webp|gif|svg)$' } |
+  Sort-Object Name |
+  ForEach-Object { $_.Name }
+
+# Ensure default.svg first
+if ($files -notcontains "default.svg") { $files = @("default.svg") + $files } else {
+  $files = @("default.svg") + ($files | Where-Object { $_ -ne "default.svg" })
+}
+
+$avatarsObj = @{ files = $files } | ConvertTo-Json -Depth 5
+Write-Utf8NoBom $avatarsJson ($avatarsObj + "`n")
+
+# icon + manifest
+Write-Utf8NoBom (Join-Path $dir "icon.svg") @'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="48" fill="#0b0f19"/>
+  <rect x="52" y="52" width="152" height="152" rx="40" fill="#22c55e"/>
+  <text x="128" y="152" text-anchor="middle" font-size="84" font-family="system-ui,Segoe UI,Arial" fill="#04160a" font-weight="900">XP</text>
+</svg>
+'@
+
+Write-Utf8NoBom (Join-Path $dir "manifest.webmanifest") @'
+{
+  "name": "Skill Tracker",
+  "short_name": "Skills",
+  "description": "Offline skill tracker (zero-backend).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "256x256", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
+'@
+
+# index.html (force pako before app)
+Write-Utf8NoBom (Join-Path $dir "index.html") @'
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f19" />
+  <title>Skill Tracker</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script src="./vendor/pako.min.js" defer></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>
+'@
+
+# app.css (6-tab nav, minimal but solid)
+Write-Utf8NoBom (Join-Path $dir "app.css") @'
+:root{
+  --bg:#070a12; --panel:#0b1222; --text:#e5e7eb; --muted:#9aa4b2; --border:rgba(226,232,240,.12);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --brand:#3ddc84; --danger:#ef4444; --warn:#f59e0b;
+  --r:16px; --pad:14px; --tap:48px; --navH:74px;
+  color-scheme: dark;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7fb; --panel:#ffffff; --text:#0f172a; --muted:#475569; --border:rgba(15,23,42,.12);
+  --shadow:0 10px 28px rgba(2,6,23,.08);
+  --brand:#22c55e;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:var(--bg); color:var(--text);
+}
+button,input,select,textarea{font:inherit}
+button{
+  min-height:var(--tap);
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:color-mix(in srgb, var(--panel) 88%, var(--bg));
+  color:var(--text);
+  font-weight:900;
+  cursor:pointer;
+}
+button:active{transform:translateY(1px)}
+button[disabled]{opacity:.5; cursor:not-allowed; transform:none}
+.btn-primary{
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand));
+  border-color:color-mix(in srgb, var(--brand) 55%, var(--border));
+  color:#03120a;
+}
+.btn-danger{
+  background:color-mix(in srgb, var(--danger) 18%, var(--panel));
+  border-color:color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+.input, select, textarea{
+  width:100%;
+  min-height:var(--tap);
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text);
+  padding:10px 12px;
+  outline:none;
+}
+textarea{min-height:110px; resize:vertical}
+.shell{min-height:100vh; display:flex; flex-direction:column}
+.header{
+  position:sticky; top:0; z-index:10;
+  background:color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:10px 14px;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+}
+.brand{display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer}
+.brandStack{display:flex; flex-direction:column; line-height:1.05}
+.brandName{font-weight:950; letter-spacing:.2px}
+.brandSub{font-size:12px; color:var(--muted); font-weight:800}
+.avatar{
+  width:40px; height:40px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 70%, white), var(--brand));
+  box-shadow:var(--shadow);
+  flex:0 0 auto;
+}
+.avatar img{width:100%; height:100%; object-fit:cover; display:block}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:color-mix(in srgb, var(--panel) 85%, var(--bg));
+  color:var(--muted);
+  font-size:12px;
+  white-space:nowrap;
+}
+.main{
+  width:min(980px, 100%);
+  margin:0 auto;
+  padding:14px 14px calc(var(--navH) + 28px);
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:var(--pad);
+  box-shadow:var(--shadow);
+}
+.stack{display:flex; flex-direction:column; gap:10px}
+.row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.grid{display:grid; gap:12px}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:740px){ .grid3{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.h1{font-size:22px; font-weight:950; margin:0}
+.h2{font-size:16px; font-weight:900; margin:0}
+.p{margin:0; color:var(--muted)}
+.small{font-size:12px; color:var(--muted)}
+.hr{height:1px; background:var(--border); margin:8px 0}
+.progress{
+  height:10px; border-radius:999px;
+  background:color-mix(in srgb, var(--bg) 50%, var(--panel));
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.progress > div{
+  height:100%;
+  width:var(--w,0%);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 70%, white), var(--brand));
+}
+.nav{
+  position:fixed; left:0; right:0; bottom:0;
+  height:var(--navH);
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+  padding:8px 10px max(8px, env(safe-area-inset-bottom));
+  background:color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  z-index:30;
+}
+.navBtn{
+  border:1px solid transparent;
+  border-radius:16px;
+  background:transparent;
+  display:flex; flex-direction:column;
+  justify-content:center; align-items:center;
+  gap:4px;
+  min-height:52px;
+  color:var(--muted);
+}
+.navBtn.active{
+  background:color-mix(in srgb, var(--panel) 78%, var(--bg));
+  border-color:var(--border);
+  color:var(--text);
+}
+.navEmoji{font-size:18px}
+.navLabel{font-size:11px; font-weight:900}
+.toastHost{
+  position:fixed;
+  top:10px; left:50%;
+  transform:translateX(-50%);
+  width:min(560px, calc(100% - 22px));
+  display:flex; flex-direction:column; gap:10px;
+  z-index:60;
+  pointer-events:none;
+}
+.toast{
+  pointer-events:none;
+  border-radius:18px;
+  border:1px solid var(--border);
+  background:color-mix(in srgb, var(--panel) 88%, var(--bg));
+  box-shadow:var(--shadow);
+  padding:12px 14px;
+}
+.toastTitle{font-weight:950; margin:0 0 2px}
+.toastMsg{margin:0; color:var(--muted); font-weight:750}
+.modalOverlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:grid; place-items:end center;
+  padding:16px;
+  z-index:80;
+}
+.modal{
+  width:min(720px, 100%);
+  background:var(--panel);
+  border-radius:22px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.modalHead{
+  padding:14px 14px 8px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.modalTitle{font-weight:950; font-size:16px; margin:0}
+.modalBody{padding:14px}
+.modalActions{
+  padding:14px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px;
+  justify-content:flex-end;
+}
+'@
+
+# sw.js bump cache name to force new assets
+Write-Utf8NoBom (Join-Path $dir "sw.js") @'
+const CACHE = "skill-tracker-v6";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./app.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./vendor/pako.min.js",
+  "./profile/avatars.json",
+  "./profile/avatars/default.svg"
+];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await c.addAll(ASSETS);
+    self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => (k === CACHE ? null : caches.delete(k))));
+    self.clients.claim();
+  })());
+});
+
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+
+  const isAvatarList = url.pathname.endsWith("/profile/avatars.json");
+  const isAvatarImg = url.pathname.includes("/profile/avatars/");
+  if (isAvatarList || isAvatarImg) {
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const fresh = await fetch(req, { cache: "no-store" });
+        cache.put(req, fresh.clone()).catch(() => {});
+        return fresh;
+      } catch {
+        return (await cache.match(req)) || (await caches.match("./"));
+      }
+    })());
+    return;
+  }
+
+  e.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(req, { ignoreSearch: true });
+    if (cached) return cached;
+    try {
+      const fresh = await fetch(req);
+      cache.put(req, fresh.clone()).catch(() => {});
+      return fresh;
+    } catch {
+      return caches.match("./");
+    }
+  })());
+});
+'@
+
+# app.js (coins + rewards + testing + momentum lvl84 + fixed sync)
+Write-Utf8NoBom (Join-Path $dir "app.js") @'
 (() => {
   const STORAGE_KEY = "skill_tracker_save_v3";
   const LEGACY_KEYS = ["skill_tracker_save_v2","skill_tracker_save_v1","skill_tracker_save_v0"];
@@ -28,7 +448,7 @@
 
   function looksMojibake(s) {
     if (typeof s !== "string") return false;
-    return s.includes("Ãƒ") || s.includes("Ã¢") || s.includes("Ã°") || s.includes("Å¸");
+    return s.includes("Ã") || s.includes("â") || s.includes("ð") || s.includes("Ÿ");
   }
   function fixMojibake(s) {
     if (typeof s !== "string") return s;
@@ -1129,3 +1549,15 @@
 
   ensureAvatarPicked().finally(() => render());
 })();
+'@
+
+Write-Host ""
+Write-Host "Update complete." -ForegroundColor Green
+Write-Host "Backup saved to: $backupDir" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "NEXT:" -ForegroundColor Yellow
+Write-Host "1) git add -A" -ForegroundColor Yellow
+Write-Host "2) git commit -m ""Update skill-tracker (coins+rewards+testing)""" -ForegroundColor Yellow
+Write-Host "3) git push" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "If the site still looks old: hard refresh (Ctrl+F5) or unregister the Service Worker in DevTools." -ForegroundColor Cyan

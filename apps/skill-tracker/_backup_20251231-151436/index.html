@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f19" />
   <title>Skill Tracker</title>
+
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./app.css" />
 </head>
 <body>
   <div id="app"></div>
+
+  <!-- IMPORTANT: pako before app.js (sync code uses it as fallback) -->
   <script src="./vendor/pako.min.js" defer></script>
   <script src="./app.js" defer></script>
 </body>

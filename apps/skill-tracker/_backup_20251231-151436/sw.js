@@ -1,4 +1,4 @@
-const CACHE = "skill-tracker-v6";
+const CACHE = "skill-tracker-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -27,14 +27,20 @@ self.addEventListener("activate", (e) => {
   })());
 });
 
+// Stale-while-revalidate for most assets.
+// Network-first for avatar list + avatar images so changes show up immediately.
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
+
+  // Only handle same-origin
   if (url.origin !== location.origin) return;
 
   const isAvatarList = url.pathname.endsWith("/profile/avatars.json");
   const isAvatarImg = url.pathname.includes("/profile/avatars/");
+
   if (isAvatarList || isAvatarImg) {
+    // network-first
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
       try {
@@ -42,22 +48,23 @@ self.addEventListener("fetch", (e) => {
         cache.put(req, fresh.clone()).catch(() => {});
         return fresh;
       } catch {
-        return (await cache.match(req)) || (await caches.match("./"));
+        const cached = await cache.match(req);
+        if (cached) return cached;
+        return caches.match("./");
       }
     })());
     return;
   }
 
+  // stale-while-revalidate
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    const cached = await cache.match(req, { ignoreSearch: true });
-    if (cached) return cached;
-    try {
-      const fresh = await fetch(req);
+    const cached = await cache.match(req);
+    const fetchPromise = fetch(req).then((fresh) => {
       cache.put(req, fresh.clone()).catch(() => {});
       return fresh;
-    } catch {
-      return caches.match("./");
-    }
+    }).catch(() => null);
+
+    return cached || (await fetchPromise) || (await caches.match("./"));
   })());
 });
