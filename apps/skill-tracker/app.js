@@ -99,6 +99,7 @@
       createdAt: t,
       updatedAt: t,
       meta: { lastSavedAt: t, lastBackupAt: null },
+      ui: { syncCode: "", shareLink: "" },
       skills,
       actions: [],
       rewards: [],
@@ -211,6 +212,12 @@
 
     const metaIn   = (obj.meta && typeof obj.meta === "object") ? obj.meta : {};
     const walletIn = (obj.wallet && typeof obj.wallet === "object") ? obj.wallet : {};
+	const uiIn = (obj.ui && typeof obj.ui === "object") ? obj.ui : {};
+    const ui = {
+      syncCode: typeof uiIn.syncCode === "string" ? uiIn.syncCode : "",
+      shareLink: typeof uiIn.shareLink === "string" ? uiIn.shareLink : ""
+    };
+
 
     const settings = {
       ...base.settings,
@@ -228,6 +235,7 @@
       createdAt: Number(obj.createdAt) || base.createdAt,
       updatedAt: Number(obj.updatedAt) || t,
       meta: { ...base.meta, ...metaIn },
+      ui,
       skills,
       actions,
       rewards,
@@ -925,7 +933,12 @@ function route() {
 
   function settingsView() {
     const lastSaved = state.meta.lastSavedAt ? new Date(state.meta.lastSavedAt).toLocaleString() : "-";
-    const lastBackup = state.meta.lastBackupAt ? new Date(state.meta.lastBackupAt).toLocaleString() : "-";
+    const lastBackup = state.meta.lastBackupAt ? new Date(state.meta.lastBackupAt).toLocaleString() : "-";    
+	const syncVal = (state.ui?.syncCode || "");
+    const linkVal = (state.ui?.shareLink || "");
+    const hasSync = !!syncVal.trim();
+    const hasLink = !!linkVal.trim();
+
     return `
       <div class="stack">
         <div class="card">
@@ -963,17 +976,17 @@ function route() {
 
         <div class="card">
           <h2 class="h2">Sync Code + Share Link</h2>
-          <p class="small">If this fails you'll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
+          <p class="small">If this fails you'll now see an error toast. Sync snapshot trims the log to keep it reliable.</p>
           <div class="row" style="margin-top:10px; gap:10px; justify-content:flex-start; flex-wrap:wrap">
             <button class="btn-primary" data-make-sync>Generate sync code</button>
-            <button data-copy-sync disabled id="copySyncBtn">Copy code</button>
+            <button data-copy-sync ${hasSync ? "" : "disabled"} id="copySyncBtn">Copy code</button>
           </div>
-          <textarea class="input" id="syncCode" placeholder="Generate a sync code..." style="margin-top:10px"></textarea>
+		  <textarea class="input" id="syncCode" placeholder="Generate a sync code..." style="margin-top:10px">${esc(syncVal)}</textarea>
           <div class="hr"></div>
           <div class="row" style="gap:10px; justify-content:flex-start; flex-wrap:wrap">
-            <button data-copy-link disabled id="copyLinkBtn">Copy share link</button>
+            <button data-copy-link ${hasLink ? "" : "disabled"} id="copyLinkBtn">Copy share link</button>
           </div>
-          <textarea class="input" id="shareLink" placeholder="Share link appears here..." style="margin-top:10px" readonly></textarea>
+          <textarea class="input" id="shareLink" placeholder="Share link appears here..." style="margin-top:10px" readonly>${esc(linkVal)}</textarea>
           <div class="hr"></div>
           <h2 class="h2">Import from Sync Code</h2>
           <textarea class="input" id="importCode" placeholder="Paste sync code..." style="margin-top:10px"></textarea>
@@ -1465,30 +1478,27 @@ function route() {
     }
     if (e.target.closest("[data-import]")) { $("#fileInput")?.click(); return; }
 
-    if (e.target.closest("[data-make-sync]")) {
-      const btn = e.target.closest("[data-make-sync]");
-      btn?.setAttribute("disabled","disabled");
-      try {
-        toast("Sync code", "Generating...");
-        const code = await makeSyncCode();
-        const syncEl = $("#syncCode");
-        const linkEl = $("#shareLink");
-        if (!syncEl || !linkEl) { toast("Sync failed", "Missing UI elements."); return; }
-        syncEl.value = code;
+	if (e.target.closest("[data-make-sync]")) {
+	  try {
+		const code = await makeSyncCode();
 		const base = window.location.href.split("#")[0];
-		// Use router-friendly format:
-		linkEl.value = `${base}#/save/${encodeURIComponent(code)}`;
-        $("#copySyncBtn")?.removeAttribute("disabled");
-        $("#copyLinkBtn")?.removeAttribute("disabled");
-        commit(()=>{ state.meta.lastBackupAt = now(); });
-        toast("Sync code", "Generated.");
-      } catch (err) {
-        toast("Sync failed", String(err));
-      } finally {
-        btn?.removeAttribute("disabled");
-      }
-      return;
+		const link = `${base}#/save/${encodeURIComponent(code)}`;
+
+		commit(()=> {
+		  state.ui = state.ui || { syncCode:"", shareLink:"" };
+		  state.ui.syncCode = code;
+		  state.ui.shareLink = link;
+		  state.meta.lastBackupAt = now();
+		});
+
+		toast("Sync code", "Generated.");
+	  } 
+	  catch (err) {
+		toast("Sync failed", String(err));
+	  }
+	  return;
     }
+
 
     if (e.target.closest("#copySyncBtn")) {
       const code = $("#syncCode")?.value?.trim();
