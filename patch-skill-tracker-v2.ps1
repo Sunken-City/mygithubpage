@@ -1,3 +1,141 @@
+param(
+  [string]$TargetFolder = ""
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+function Ensure-Dir([string]$Path) { if (-not (Test-Path $Path)) { New-Item -ItemType Directory -Path $Path | Out-Null } }
+function Write-Utf8NoBom([string]$Path, [string]$Content) {
+  Ensure-Dir (Split-Path $Path -Parent)
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
+function Find-TrackerFolder([string]$Root) {
+    $preferred = @("apps/skill-tracker", "Games/skill-tracker", "skill-tracker")
+  foreach ($p in $preferred) {
+    $full = Join-Path $Root $p
+    if (
+      (Test-Path (Join-Path $full "index.html")) -and
+      (Test-Path (Join-Path $full "app.js")) -and
+      (Test-Path (Join-Path $full "sw.js"))
+    ) {
+      return $full
+    }
+  }
+  $cand = Get-ChildItem -Path $Root -Directory -Recurse -ErrorAction SilentlyContinue |
+    Where-Object { Test-Path (Join-Path $_.FullName "manifest.webmanifest") -and Test-Path (Join-Path $_.FullName "sw.js") -and Test-Path (Join-Path $_.FullName "app.js") } |
+    Select-Object -First 1
+  if ($cand) { return $cand.FullName }
+  return ""
+}
+
+$root = (Get-Location).Path
+$dir = ""
+if ($TargetFolder.Trim().Length -gt 0) {
+  $dir = Join-Path $root $TargetFolder
+  if (-not (Test-Path $dir)) { throw "TargetFolder not found: $TargetFolder" }
+} else {
+  $dir = Find-TrackerFolder $root
+  if (-not $dir) { throw "Could not find your skill tracker folder. Re-run with -TargetFolder 'Games/skill-tracker' (or wherever it lives)." }
+}
+Write-Host "Using tracker folder: $dir" -ForegroundColor Cyan
+
+# Backup
+$stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
+$backupDir = Join-Path $dir ("_backup_patch2_" + $stamp)
+Ensure-Dir $backupDir
+@("app.js","sw.js") | ForEach-Object {
+  $p = Join-Path $dir $_
+  if (Test-Path $p) { Copy-Item $p (Join-Path $backupDir $_) -Force }
+}
+Write-Host "Backup: $backupDir" -ForegroundColor DarkGray
+
+# Regenerate avatars.json (no manual editing)
+Ensure-Dir (Join-Path $dir "profile/avatars")
+$avatarsDir = Join-Path $dir "profile/avatars"
+$avatarsJson = Join-Path $dir "profile/avatars.json"
+$files = Get-ChildItem -Path $avatarsDir -File -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -notmatch '^\.' } |
+  Where-Object { $_.Extension -match '\.(png|jpg|jpeg|webp|gif|svg)$' } |
+  Sort-Object Name |
+  ForEach-Object { $_.Name }
+if ($files -notcontains "default.svg") { $files = @("default.svg") + $files } else {
+  $files = @("default.svg") + ($files | Where-Object { $_ -ne "default.svg" })
+}
+$avatarsObj = @{ files = $files } | ConvertTo-Json -Depth 5
+Write-Utf8NoBom $avatarsJson ($avatarsObj + "`n")
+
+# sw.js bump cache to force update
+Write-Utf8NoBom (Join-Path $dir "sw.js") @'
+const CACHE = "skill-tracker-v7";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./app.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./vendor/pako.min.js",
+  "./profile/avatars.json",
+  "./profile/avatars/default.svg"
+];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await c.addAll(ASSETS);
+    self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => (k === CACHE ? null : caches.delete(k))));
+    self.clients.claim();
+  })());
+});
+
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+
+  const isAvatarList = url.pathname.endsWith("/profile/avatars.json");
+  const isAvatarImg  = url.pathname.includes("/profile/avatars/");
+  if (isAvatarList || isAvatarImg) {
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const fresh = await fetch(req, { cache: "no-store" });
+        cache.put(req, fresh.clone()).catch(()=>{});
+        return fresh;
+      } catch {
+        return (await cache.match(req)) || (await caches.match("./"));
+      }
+    })());
+    return;
+  }
+
+  e.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(req, { ignoreSearch: true });
+    if (cached) return cached;
+    try {
+      const fresh = await fetch(req);
+      cache.put(req, fresh.clone()).catch(()=>{});
+      return fresh;
+    } catch {
+      return caches.match("./");
+    }
+  })());
+});
+'@
+
+# app.js full replacement
+Write-Utf8NoBom (Join-Path $dir "app.js") @'
 (() => {
   const STORAGE_KEY = "skill_tracker_save_v3";
   const LEGACY_KEYS = ["skill_tracker_save_v2","skill_tracker_save_v1","skill_tracker_save_v0"];
@@ -31,7 +169,7 @@
 
   function looksMojibake(s) {
     if (typeof s !== "string") return false;
-    return s.includes("Ãƒ") || s.includes("Ã¢") || s.includes("Ã°") || s.includes("Å¸");
+    return s.includes("Ã") || s.includes("â") || s.includes("ð") || s.includes("Ÿ");
   }
   function fixMojibake(s) {
     if (typeof s !== "string") return s;
@@ -717,7 +855,7 @@
         ${skills.length===0 ? `<div class="card"><p class="small">Add a skill first, then create actions that grant XP.</p></div>` : ``}
 
         ${actions.length===0 ? `
-          <div class="card"><p class="small">Create an action like â€œGym sessionâ€ â†’ +10 Upper Front Strength, +5 Walking.</p></div>
+          <div class="card"><p class="small">Create an action like “Gym session” → +10 Upper Front Strength, +5 Walking.</p></div>
         ` : `
           <div class="stack">
             ${actions.map(a=>{
@@ -768,7 +906,7 @@
           </div>
         </div>
 
-        ${rewards.length===0 ? `<div class="card"><p class="small">Add a reward (e.g. â€œNew gameâ€ for 500 coins, requires Momentum 80).</p></div>` : `
+        ${rewards.length===0 ? `<div class="card"><p class="small">Add a reward (e.g. “New game” for 500 coins, requires Momentum 80).</p></div>` : `
           <div class="stack">
             ${rewards.map(r => {
               const chk = canBuyReward(r);
@@ -896,7 +1034,7 @@
 
         <div class="card">
           <h2 class="h2">Sync Code + Share Link</h2>
-          <p class="small">If this fails youâ€™ll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
+          <p class="small">If this fails you’ll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
           <div class="row" style="margin-top:10px; gap:10px; justify-content:flex-start; flex-wrap:wrap">
             <button class="btn-primary" data-make-sync>Generate sync code</button>
             <button data-copy-sync disabled id="copySyncBtn">Copy code</button>
@@ -1143,7 +1281,7 @@
         </div>
         <div class="stack" style="gap:6px">
           <div class="small">Icon (emoji, optional)</div>
-          <input class="input" id="acIcon" value="${esc(action?.icon||"")}" placeholder="âš¡" />
+          <input class="input" id="acIcon" value="${esc(action?.icon||"")}" placeholder="⚡" />
         </div>
 
         <div class="row">
@@ -1522,3 +1660,8 @@
 
   ensureAvatarPicked().finally(() => render());
 })();
+'@
+
+Write-Host ""
+Write-Host "Patch applied." -ForegroundColor Green
+Write-Host "Commit and push, then hard refresh if needed." -ForegroundColor Yellow

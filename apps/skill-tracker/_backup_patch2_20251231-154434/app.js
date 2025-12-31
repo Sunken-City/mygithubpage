@@ -16,17 +16,14 @@
     star: "\u{2B50}",
     coin: "\u{1FA99}",
     check: "\u{2705}",
-    x: "\u{2715}",
-    edit: "\u{270F}\u{FE0F}",
-    trash: "\u{1F5D1}\u{FE0F}",
-    plus: "\u{2795}"
+    x: "\u{2715}"
   };
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   const now = () => Date.now();
   const fmtInt = (n) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(Number(n)||0);
-  const fmtXp  = (n) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(n)||0);
+  const fmtXp = (n) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(n)||0);
   const createId = () => (crypto?.randomUUID?.() ?? ("id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16)));
 
   function looksMojibake(s) {
@@ -44,7 +41,6 @@
     } catch { return s; }
   }
 
-  // Triangular XP: Level 81->82 costs 82 XP. Total XP for Level L = L*(L+1)/2.
   function xpForLevel(L) {
     const n = Math.max(0, Math.floor(Number(L)||0));
     return (n * (n + 1)) / 2;
@@ -69,8 +65,10 @@
 
   function defaultSave() {
     const t = now();
+
+    const momentumXp = xpForLevel(84); // Level 84 exactly = 3570 XP
     const skillsRaw = [
-      { name:"Momentum", icon:EM.check, color:"#22c55e", xp: xpForLevel(84) },
+      { name:"Momentum", icon:EM.check, color:"#22c55e", xp: momentumXp },
       { name:"Upper Front Strength", icon:"\u{1F4AA}", color:"#f97316", xp:0 },
       { name:"Upper Back Strength",  icon:"\u{1F9F1}", color:"#60a5fa", xp:0 },
       { name:"Lower Front Strength", icon:"\u{1F9B5}", color:"#22c55e", xp:0 },
@@ -82,7 +80,8 @@
       { name:"Mobility",             icon:"\u{1F9D8}", color:"#fb7185", xp:0 },
       { name:"Hydration",            icon:"\u{1F4A7}", color:"#0ea5e9", xp:0 }
     ];
-    const skills = skillsRaw.map((s,i)=>({
+
+    const skills = skillsRaw.map((s, i) => ({
       id: createId(),
       name: s.name,
       icon: s.icon,
@@ -115,38 +114,19 @@
     };
   }
 
-  function ensureMomentumSkill(s) {
-    const exists = s.skills.some(x => (x.name || "").toLowerCase() === "momentum");
-    if (exists) return s;
-    const t = now();
-    const momentum = {
-      id: createId(),
-      name: "Momentum",
-      icon: EM.check,
-      color: "#22c55e",
-      xp: xpForLevel(84),
-      createdAt: t,
-      updatedAt: t,
-      archived: false,
-      order: 0
-    };
-    s.skills = [momentum, ...s.skills].map((x,i)=>({ ...x, order:i }));
-    return s;
-  }
-
   function sanitizeSave(obj) {
     if (!obj || typeof obj !== "object") return defaultSave();
     const base = defaultSave();
     const t = now();
 
     const settingsIn = (obj.settings && typeof obj.settings === "object") ? obj.settings : {};
-    const profileIn  = (settingsIn.profile && typeof settingsIn.profile === "object") ? settingsIn.profile : {};
+    const profileIn = (settingsIn.profile && typeof settingsIn.profile === "object") ? settingsIn.profile : {};
 
-    const skillsIn    = Array.isArray(obj.skills) ? obj.skills : base.skills;
-    const actionsIn   = Array.isArray(obj.actions) ? obj.actions : [];
-    const rewardsIn   = Array.isArray(obj.rewards) ? obj.rewards : [];
+    const skillsIn = Array.isArray(obj.skills) ? obj.skills : base.skills;
+    const actionsIn = Array.isArray(obj.actions) ? obj.actions : [];
+    const rewardsIn = Array.isArray(obj.rewards) ? obj.rewards : [];
     const purchasesIn = Array.isArray(obj.purchases) ? obj.purchases : [];
-    const logIn       = Array.isArray(obj.log) ? obj.log : [];
+    const logIn = Array.isArray(obj.log) ? obj.log : [];
 
     const skills = skillsIn.map((x, idx) => ({
       id: String(x.id || createId()),
@@ -209,9 +189,8 @@
       revertedAt: e.revertedAt ? Number(e.revertedAt) : null
     }));
 
-    const metaIn   = (obj.meta && typeof obj.meta === "object") ? obj.meta : {};
+    const metaIn = (obj.meta && typeof obj.meta === "object") ? obj.meta : {};
     const walletIn = (obj.wallet && typeof obj.wallet === "object") ? obj.wallet : {};
-
     const settings = {
       ...base.settings,
       ...settingsIn,
@@ -240,11 +219,32 @@
     return ensureMomentumSkill(out);
   }
 
+  function ensureMomentumSkill(s) {
+    const exists = s.skills.some(x => (x.name || "").toLowerCase() === "momentum");
+    if (exists) return s;
+
+    const t = now();
+    const momentum = {
+      id: createId(),
+      name: "Momentum",
+      icon: EM.check,
+      color: "#22c55e",
+      xp: xpForLevel(84),
+      createdAt: t,
+      updatedAt: t,
+      archived: false,
+      order: 0
+    };
+    s.skills = [momentum, ...s.skills].map((x,i)=>({ ...x, order:i }));
+    return s;
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return sanitizeSave(JSON.parse(raw));
     } catch {}
+
     for (const k of LEGACY_KEYS) {
       try {
         const raw = localStorage.getItem(k);
@@ -257,7 +257,9 @@
   let state = load() || defaultSave();
   let saveTimer = null;
 
-  function hardSave() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
+  function hardSave() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+  }
   function scheduleSave() {
     if (saveTimer) return;
     saveTimer = setTimeout(() => { saveTimer = null; hardSave(); }, 120);
@@ -290,15 +292,26 @@
     render();
   }
 
-  function totalLevel() { return state.skills.filter(s=>!s.archived).reduce((sum,s)=>sum + levelFromXp(s.xp), 0); }
-  function totalXp()    { return state.skills.filter(s=>!s.archived).reduce((sum,s)=>sum + (Number(s.xp)||0), 0); }
-  function coinsEarned(){ return totalLevel() * 10; }
-  function coinsSpent() { return Math.max(0, Number(state.wallet?.spentCoins)||0); }
-  function coinsBalance(){ return coinsEarned() - coinsSpent(); }
+  function totalLevel() {
+    return state.skills.filter(s=>!s.archived).reduce((sum,s)=>sum + levelFromXp(s.xp), 0);
+  }
+  function totalXp() {
+    return state.skills.filter(s=>!s.archived).reduce((sum,s)=>sum + (Number(s.xp)||0), 0);
+  }
+  function coinsEarned() {
+    return totalLevel() * 10;
+  }
+  function coinsSpent() {
+    return Math.max(0, Number(state.wallet?.spentCoins)||0);
+  }
+  function coinsBalance() {
+    return coinsEarned() - coinsSpent();
+  }
 
   function canBuyReward(reward) {
-    if (reward.archived) return { ok:false, reason:"Deleted" };
+    if (reward.archived) return { ok:false, reason:"Archived" };
     if (coinsBalance() < reward.costCoins) return { ok:false, reason:"Not enough coins" };
+
     for (const r of reward.requirements || []) {
       const s = state.skills.find(x=>x.id === r.skillId);
       const lvl = s ? levelFromXp(s.xp) : 0;
@@ -314,22 +327,21 @@
       const data = await res.json();
       const files = Array.isArray(data.files) ? data.files.filter(x => typeof x === "string" && x.trim()) : ["default.svg"];
       return files.length ? files : ["default.svg"];
-    } catch { return ["default.svg"]; }
+    } catch {
+      return ["default.svg"];
+    }
   }
-
   function getAvatarUrl() {
     const a = state.settings.profile.avatar || "";
     if (!a) return rel("./profile/avatars/default.svg");
     return rel("./profile/avatars/" + a);
   }
-
   async function ensureAvatarPicked() {
     if (state.settings.profile.avatar) return;
     const files = await loadAvatarList();
     const pick = files[Math.floor(Math.random() * files.length)];
     commit(()=>{ state.settings.profile.avatar = pick; });
   }
-
   async function randomizeAvatar() {
     const files = await loadAvatarList();
     const pick = files[Math.floor(Math.random() * files.length)];
@@ -337,29 +349,12 @@
     toast("Avatar", "Randomized.");
   }
 
-  // ----- Sync code (FIXED) -----
-  // We generate a sync snapshot that trims the log to avoid huge payloads.
-  function syncSnapshot() {
-    return { ...state, log: state.log.slice(-200) };
-  }
-
   function bytesToB64Url(bytes) {
-    // Safer conversion (no huge spreads)
     let bin = "";
-    if (typeof TextDecoder !== "undefined") {
-      try {
-        // iso-8859-1 maps 0..255 directly to chars
-        bin = new TextDecoder("iso-8859-1").decode(bytes);
-      } catch {
-        // fallback loop
-        for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-      }
-    } else {
-      for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-    }
+    const chunk = 0x8000;
+    for (let i=0;i<bytes.length;i+=chunk) bin += String.fromCharCode(...bytes.subarray(i,i+chunk));
     return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
   }
-
   function b64UrlToBytes(b64url) {
     const b64 = b64url.replace(/-/g,"+").replace(/_/g,"/") + "===".slice((b64url.length+3)%4);
     const bin = atob(b64);
@@ -367,7 +362,6 @@
     for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
     return bytes;
   }
-
   async function gzipString(str) {
     if ("CompressionStream" in window) {
       const cs = new CompressionStream("gzip");
@@ -378,7 +372,6 @@
     if (window.pako?.gzip) return window.pako.gzip(str);
     throw new Error("No gzip support");
   }
-
   async function ungzipToString(bytes) {
     if ("DecompressionStream" in window) {
       const ds = new DecompressionStream("gzip");
@@ -388,9 +381,8 @@
     if (window.pako?.ungzip) return window.pako.ungzip(bytes, { to:"string" });
     throw new Error("No ungzip support");
   }
-
-  async function makeSyncCode() {
-    const json = JSON.stringify(syncSnapshot());
+  async function makeSyncCode(obj) {
+    const json = JSON.stringify(obj);
     try {
       const gz = await gzipString(json);
       return "z:" + bytesToB64Url(gz);
@@ -399,7 +391,6 @@
       return "j:" + bytesToB64Url(te.encode(json));
     }
   }
-
   async function decodeSyncCode(code) {
     const raw = code.trim();
     const payload = (raw.startsWith("z:") || raw.startsWith("j:")) ? raw.slice(2) : raw;
@@ -427,7 +418,8 @@
     if (h.startsWith("#save=")) return { page:"save", code: decodeURIComponent(h.slice(6)) };
     const cleaned = h.startsWith("#/") ? h.slice(2) : "home";
     const parts = cleaned.split("/").filter(Boolean);
-    return { page: parts[0] || "home" };
+    const page = parts[0] || "home";
+    return { page };
   }
   function nav(p) { location.hash = "#/" + p; }
 
@@ -458,120 +450,60 @@
         actions[idx]?.onClick?.(() => el.remove());
       }
     });
-    return el;
   }
 
-  // ---- Core XP + undo ----
-  function pushLog(entry) {
-    state.log.push(entry);
-    if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
+  function homeView() {
+    const skills = state.skills.filter(s=>!s.archived).sort((a,b)=>a.order-b.order);
+    const lvl = totalLevel();
+    const xp = totalXp();
+    const earned = coinsEarned();
+    const spent = coinsSpent();
+    const bal = coinsBalance();
+
+    return `
+      <div class="stack">
+        <div class="card">
+          <div class="row">
+            <div class="stack" style="gap:6px">
+              <h1 class="h1">${esc(state.settings.profile.name)}'s Dashboard</h1>
+              <p class="p">Momentum is your main "get it done" bar. Coins come from levels.</p>
+            </div>
+            <button data-nav="settings">Settings</button>
+          </div>
+
+          <div class="grid grid2" style="margin-top:12px">
+            <div class="card" style="box-shadow:none">
+              <div class="row"><div class="small">Total Level</div><div style="font-weight:950">${fmtInt(lvl)}</div></div>
+              <div class="row"><div class="small">Total XP</div><div style="font-weight:950">${fmtXp(xp)}</div></div>
+            </div>
+            <div class="card" style="box-shadow:none">
+              <div class="row"><div class="small">Coins earned</div><div style="font-weight:950">${fmtInt(earned)}</div></div>
+              <div class="row"><div class="small">Coins balance</div><div style="font-weight:950">${fmtInt(bal)}</div></div>
+              <div class="small">Spent: ${fmtInt(spent)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <h2 class="h2">Top Skills</h2>
+          <button data-nav="skills">Skills</button>
+        </div>
+
+        <div class="grid grid2 grid3">
+          ${skills.slice(0,6).map(skillCard).join("")}
+        </div>
+
+        <div class="row">
+          <h2 class="h2">Rewards</h2>
+          <button data-nav="rewards">Open</button>
+        </div>
+      </div>
+    `;
   }
 
-  function addXp(skillId, amount, source="skill_xp") {
-    const s = state.skills.find(x=>x.id===skillId);
-    const amt = Number(amount);
-    if (!s || !Number.isFinite(amt) || amt===0) return;
-
-    commit(()=> {
-      s.xp = Math.max(0, (Number(s.xp)||0) + amt);
-      s.updatedAt = now();
-      pushLog({
-        id: createId(),
-        timestamp: now(),
-        type: source,
-        skillId: source==="skill_xp" ? s.id : null,
-        actionId: null,
-        rewardId: null,
-        costCoins: 0,
-        deltas: [{ skillId: s.id, delta: amt }],
-        note: null,
-        revertedAt: null
-      });
-    });
-  }
-
-  function runAction(actionId) {
-    const a = state.actions.find(x=>x.id===actionId);
-    if (!a) return;
-
-    const deltas = [];
-    commit(()=> {
-      for (const g of a.grants) {
-        const s = state.skills.find(x=>x.id===g.skillId);
-        const amt = Number(g.amount)||0;
-        if (!s || amt===0) continue;
-        s.xp = Math.max(0, (Number(s.xp)||0) + amt);
-        s.updatedAt = now();
-        deltas.push({ skillId: s.id, delta: amt });
-      }
-      if (deltas.length) {
-        pushLog({
-          id: createId(),
-          timestamp: now(),
-          type: "action",
-          skillId: null,
-          actionId: a.id,
-          rewardId: null,
-          costCoins: 0,
-          deltas,
-          note: null,
-          revertedAt: null
-        });
-      }
-    });
-  }
-
-  function buyReward(id) {
-    const r = state.rewards.find(x=>x.id===id);
-    if (!r) return;
-    const chk = canBuyReward(r);
-    if (!chk.ok) { toast("Can't buy", chk.reason); return; }
-
-    commit(()=> {
-      state.wallet.spentCoins = coinsSpent() + r.costCoins;
-      pushLog({
-        id: createId(),
-        timestamp: now(),
-        type: "purchase",
-        rewardId: r.id,
-        costCoins: r.costCoins,
-        deltas: [],
-        revertedAt: null
-      });
-    });
-    toast("Purchased", r.name);
-  }
-
-  function undoEvent(id) {
-    const e = state.log.find(x=>x.id===id);
-    if (!e || e.revertedAt) return;
-
-    commit(()=> {
-      if (e.type === "purchase") {
-        state.wallet.spentCoins = Math.max(0, coinsSpent() - (e.costCoins||0));
-      } else {
-        for (const d of e.deltas || []) {
-          const s = state.skills.find(x=>x.id===d.skillId);
-          if (!s) continue;
-          s.xp = Math.max(0, (Number(s.xp)||0) - (Number(d.delta)||0));
-          s.updatedAt = now();
-        }
-      }
-      e.revertedAt = now();
-    });
-    toast("Undone", "Event reverted.");
-  }
-
-  // ---- UI helpers ----
-  function momentumSkill() {
-    return state.skills.find(s => (s.name||"").toLowerCase() === "momentum") || null;
-  }
-
-  function skillCard(s, opts={}) {
+  function skillCard(s) {
     const L = levelFromXp(s.xp);
     const pct = Math.round(levelProgress01(s.xp)*100);
-    const showEdit = !!opts.showEdit;
-
     return `
       <div class="card" style="${s.color?`border-color:${esc(s.color)}55`:``}">
         <div class="row">
@@ -584,10 +516,7 @@
               <div class="small">Level ${fmtInt(L)} | XP ${fmtXp(s.xp)}</div>
             </div>
           </div>
-          <div class="row" style="justify-content:flex-end; gap:8px">
-            ${showEdit ? `<button data-edit-skill="${esc(s.id)}">${EM.edit}</button>` : ``}
-            <button data-add-xp="${esc(s.id)}" data-amt="1">+1</button>
-          </div>
+          <button data-add-xp="${esc(s.id)}" data-amt="1">+1</button>
         </div>
 
         <div class="stack" style="margin-top:10px">
@@ -596,76 +525,12 @@
             <span class="small">To next: ${fmtXp(xpToNext(s.xp))}</span>
             <span class="small">Next: ${fmtInt(L+1)}</span>
           </div>
-          <div class="row" style="gap:8px; flex-wrap:wrap; justify-content:flex-start">
+          <div class="row" style="gap:8px">
             <button data-add-xp="${esc(s.id)}" data-amt="5">+5</button>
             <button data-add-xp="${esc(s.id)}" data-amt="10">+10</button>
-            <input class="input" style="min-height:44px; max-width:160px" inputmode="decimal" placeholder="Custom" data-custom-xp="${esc(s.id)}" />
+            <input class="input" style="min-height:44px" inputmode="decimal" placeholder="Custom" data-custom-xp="${esc(s.id)}" />
             <button data-add-custom="${esc(s.id)}">Add</button>
           </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function homeView() {
-    const skills = state.skills.filter(s=>!s.archived).sort((a,b)=>a.order-b.order);
-    const lvl = totalLevel();
-    const xp = totalXp();
-    const bal = coinsBalance();
-    const m = momentumSkill();
-    const mLvl = m ? levelFromXp(m.xp) : 0;
-    const mPct = m ? Math.round(levelProgress01(m.xp)*100) : 0;
-
-    return `
-      <div class="stack">
-        <div class="card">
-          <div class="row" style="align-items:flex-start">
-            <div class="row" style="justify-content:flex-start; gap:14px; align-items:flex-start">
-              <div class="avatar" style="width:96px; height:96px; border-radius:26px">
-                <img src="${esc(getAvatarUrl())}" alt="Avatar" onerror="this.src='${esc(rel("./profile/avatars/default.svg"))}'">
-              </div>
-              <div class="stack" style="gap:10px">
-                <div class="stack" style="gap:4px">
-                  <h1 class="h1">${esc(state.settings.profile.name)}</h1>
-                  <div class="small">Character Sheet</div>
-                </div>
-                <div class="row" style="justify-content:flex-start; flex-wrap:wrap; gap:8px">
-                  <span class="chip">Total Level: ${fmtInt(lvl)}</span>
-                  <span class="chip">Total XP: ${fmtXp(xp)}</span>
-                  <span class="chip">${EM.coin} Coins: ${fmtInt(bal)}</span>
-                </div>
-
-                ${m ? `
-                  <div class="card" style="box-shadow:none; padding:12px">
-                    <div class="row">
-                      <div class="h2">${esc(m.icon||EM.check)} Momentum</div>
-                      <div class="small">Level ${fmtInt(mLvl)}</div>
-                    </div>
-                    <div class="progress" style="margin-top:8px"><div style="--w:${mPct}%"></div></div>
-                    <div class="row" style="margin-top:6px">
-                      <span class="small">To next: ${fmtXp(xpToNext(m.xp))}</span>
-                      <span class="small">${fmtInt(mPct)}%</span>
-                    </div>
-                  </div>
-                ` : ``}
-              </div>
-            </div>
-            <button data-nav="settings">Settings</button>
-          </div>
-        </div>
-
-        <div class="row">
-          <h2 class="h2">Top Skills</h2>
-          <button data-nav="skills">Skills</button>
-        </div>
-
-        <div class="grid grid2 grid3">
-          ${skills.slice(0,6).map(s => skillCard(s)).join("")}
-        </div>
-
-        <div class="row">
-          <h2 class="h2">Rewards</h2>
-          <button data-nav="rewards">Open</button>
         </div>
       </div>
     `;
@@ -678,71 +543,13 @@
         <div class="card">
           <div class="row">
             <h1 class="h1">Skills</h1>
-            <button data-add-skill class="btn-primary">${EM.plus} Add Skill</button>
+            <button data-add-skill class="btn-primary">Add Skill</button>
           </div>
-          <p class="small">Tap +1/+5/+10 to add XP. Use Edit to rename/archive/delete.</p>
+          <p class="small">Tip: Momentum starts at Level 84. Level 84 equals 3570 total XP.</p>
         </div>
         <div class="grid grid2 grid3">
-          ${skills.filter(s=>!s.archived).map(s => skillCard(s, { showEdit:true })).join("")}
+          ${skills.map(skillCard).join("")}
         </div>
-        <div class="card">
-          <div class="row">
-            <h2 class="h2">Archived</h2>
-            <span class="chip">${fmtInt(skills.filter(s=>s.archived).length)}</span>
-          </div>
-          <div class="grid grid2 grid3" style="margin-top:12px">
-            ${skills.filter(s=>s.archived).map(s => skillCard(s, { showEdit:true })).join("") || `<p class="small">None</p>`}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function actionsView() {
-    const actions = state.actions.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
-    const skills = state.skills.filter(s=>!s.archived).sort((a,b)=>a.order-b.order);
-
-    return `
-      <div class="stack">
-        <div class="card">
-          <div class="row">
-            <div class="stack" style="gap:4px">
-              <h1 class="h1">Actions</h1>
-              <p class="p">One tap = multi-skill XP grants.</p>
-            </div>
-            <button data-add-action class="btn-primary">${EM.plus} Add Action</button>
-          </div>
-        </div>
-
-        ${skills.length===0 ? `<div class="card"><p class="small">Add a skill first, then create actions that grant XP.</p></div>` : ``}
-
-        ${actions.length===0 ? `
-          <div class="card"><p class="small">Create an action like â€œGym sessionâ€ â†’ +10 Upper Front Strength, +5 Walking.</p></div>
-        ` : `
-          <div class="stack">
-            ${actions.map(a=>{
-              const icon = (a.icon && a.icon.trim()) ? a.icon : EM.bolt;
-              const summary = (a.grants||[]).slice(0,4).map(g=>{
-                const sn = state.skills.find(s=>s.id===g.skillId)?.name ?? "Unknown";
-                return `${esc(sn)} +${fmtXp(g.amount)}`;
-              }).join(" | ");
-              return `
-                <div class="card">
-                  <div class="row">
-                    <div class="stack" style="gap:4px">
-                      <div class="h2">${esc(icon)} ${esc(a.name)}</div>
-                      <div class="small">${summary || "No grants yet."}</div>
-                    </div>
-                    <div class="row" style="justify-content:flex-end; gap:8px">
-                      <button data-edit-action="${esc(a.id)}">${EM.edit}</button>
-                      <button class="btn-primary" data-run-action="${esc(a.id)}">Run</button>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join("")}
-          </div>
-        `}
       </div>
     `;
   }
@@ -759,16 +566,17 @@
               <h1 class="h1">Rewards</h1>
               <p class="p">Each level gives 10 coins. Buy rewards to spend coins.</p>
             </div>
-            <button data-new-reward class="btn-primary">${EM.plus} Add Reward</button>
+            <button data-new-reward class="btn-primary">Add Reward</button>
           </div>
           <div class="row" style="margin-top:10px; justify-content:flex-start; flex-wrap:wrap; gap:8px">
             <span class="chip">${EM.coin} Balance: ${fmtInt(bal)}</span>
             <span class="chip">Earned: ${fmtInt(coinsEarned())}</span>
             <span class="chip">Spent: ${fmtInt(coinsSpent())}</span>
           </div>
+          ${bal < 0 ? `<div class="small" style="margin-top:8px; color:color-mix(in srgb, var(--danger) 70%, var(--text));">Balance is negative (usually from lowering levels after purchases).</div>` : ``}
         </div>
 
-        ${rewards.length===0 ? `<div class="card"><p class="small">Add a reward (e.g. â€œNew gameâ€ for 500 coins, requires Momentum 80).</p></div>` : `
+        ${rewards.length===0 ? `<div class="card"><p class="small">Add a reward (e.g. "Buy a game" for 500 coins, requires Momentum 80).</p></div>` : `
           <div class="stack">
             ${rewards.map(r => {
               const chk = canBuyReward(r);
@@ -783,10 +591,10 @@
                     <div class="stack" style="gap:6px">
                       <div class="h2">${esc(r.name)}</div>
                       <div class="small">Cost: ${fmtInt(r.costCoins)} coins</div>
-                      <div class="small">Requires: ${reqs || "none"}</div>
+                      ${reqs ? `<div class="small">Requires: ${reqs}</div>` : `<div class="small">Requires: none</div>`}
                     </div>
                     <div class="stack" style="gap:8px; align-items:flex-end">
-                      <button data-edit-reward="${esc(r.id)}">${EM.edit}</button>
+                      <button data-edit-reward="${esc(r.id)}">Edit</button>
                       <button class="btn-primary" ${chk.ok ? "" : "disabled"} data-buy-reward="${esc(r.id)}">Buy</button>
                       ${chk.ok ? "" : `<div class="small">${esc(chk.reason)}</div>`}
                     </div>
@@ -801,7 +609,7 @@
   }
 
   function logView() {
-    const events = [...state.log].slice().reverse().slice(0,250);
+    const events = [...state.log].slice().reverse().slice(0,200);
     return `
       <div class="stack">
         <div class="card">
@@ -809,9 +617,8 @@
             <h1 class="h1">Log</h1>
             <button data-clear-log class="btn-danger">Clear Log</button>
           </div>
-          <p class="small">XP, actions, and purchases appear here. Undo is per-event.</p>
+          <p class="small">XP, actions, and purchases appear here.</p>
         </div>
-
         ${events.length===0 ? `<div class="card"><p class="small">No events yet.</p></div>` : `
           <div class="stack">
             ${events.map(e => {
@@ -831,19 +638,17 @@
                   </div>
                 `;
               }
-              const parts = (e.deltas||[]).map(d => {
+              const parts = e.deltas.map(d => {
                 const s = state.skills.find(x=>x.id===d.skillId);
                 return `${esc(s?.name || "Skill")} ${(d.delta>=0?"+":"")}${fmtXp(d.delta)}`;
               }).join(" | ");
-              const label = e.type==="action" ? "Action" : "XP";
-              const icon = e.type==="action" ? EM.bolt : EM.star;
               return `
                 <div class="card">
                   <div class="row">
                     <div class="stack" style="gap:2px">
-                      <div class="h2">${icon} ${label}</div>
+                      <div class="h2">${e.type==="action"?EM.bolt:EM.star} ${esc(e.type==="action"?"Action":"XP")}</div>
                       <div class="small">${when}</div>
-                      <div class="small">${parts || "-"}</div>
+                      <div class="small">${parts}</div>
                     </div>
                     ${e.revertedAt ? `<span class="chip">undone</span>` : `<button data-undo="${esc(e.id)}">Undo</button>`}
                   </div>
@@ -866,23 +671,27 @@
           <div class="row" style="margin-top:10px; justify-content:flex-start; flex-wrap:wrap; gap:8px">
             <span class="chip">Last saved: ${esc(lastSaved)}</span>
             <span class="chip">Last backup: ${esc(lastBackup)}</span>
-            <span class="chip">${EM.coin} Coins: ${fmtInt(coinsBalance())}</span>
+            <span class="chip">${EM.coin} Balance: ${fmtInt(coinsBalance())}</span>
           </div>
         </div>
 
         <div class="card">
           <h2 class="h2">Profile</h2>
-          <div class="row" style="justify-content:flex-start; gap:12px; margin-top:12px; flex-wrap:wrap">
-            <div class="avatar" style="width:64px; height:64px; border-radius:18px">
-              <img src="${esc(getAvatarUrl())}" alt="Avatar" onerror="this.src='${esc(rel("./profile/avatars/default.svg"))}'">
+          <div class="grid grid2" style="margin-top:12px; align-items:center">
+            <div class="row" style="justify-content:flex-start; gap:12px">
+              <div class="avatar" style="width:64px; height:64px; border-radius:18px">
+                <img src="${esc(getAvatarUrl())}" alt="Avatar" onerror="this.src='${esc(rel("./profile/avatars/default.svg"))}'">
+              </div>
+              <div class="stack" style="gap:6px; width:100%">
+                <div class="small">Name</div>
+                <input class="input" data-profile-name value="${esc(state.settings.profile.name)}" />
+              </div>
             </div>
-            <div class="stack" style="gap:6px; flex:1">
-              <div class="small">Name</div>
-              <input class="input" data-profile-name value="${esc(state.settings.profile.name)}" />
+            <div class="row" style="justify-content:flex-end; gap:10px">
+              <button data-random-avatar>Randomize avatar</button>
             </div>
-            <button data-random-avatar>Randomize avatar</button>
           </div>
-          <div class="small" style="margin-top:10px">Add images to profile/avatars/ then run the patch script again (it regenerates avatars.json).</div>
+          <div class="small" style="margin-top:10px">Add images to: profile/avatars/ then re-run the update script.</div>
         </div>
 
         <div class="card">
@@ -896,7 +705,6 @@
 
         <div class="card">
           <h2 class="h2">Sync Code + Share Link</h2>
-          <p class="small">If this fails youâ€™ll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
           <div class="row" style="margin-top:10px; gap:10px; justify-content:flex-start; flex-wrap:wrap">
             <button class="btn-primary" data-make-sync>Generate sync code</button>
             <button data-copy-sync disabled id="copySyncBtn">Copy code</button>
@@ -921,6 +729,7 @@
           <div class="row" style="margin-top:10px; gap:10px; justify-content:flex-start; flex-wrap:wrap">
             <button data-repair>Repair Unicode + Resave</button>
             <button data-reset-xp class="btn-danger">Reset XP + Clear Log</button>
+            <button data-set-momentum class="btn-primary">Set Momentum to Level 84</button>
             <button data-factory class="btn-danger">Factory Reset</button>
           </div>
         </div>
@@ -948,7 +757,7 @@
               <div class="brandSub">Skill Tracker</div>
             </div>
           </div>
-          <div class="chip">${EM.coin} ${fmtInt(coinsBalance())} | Saved: ${esc(lastSaved)}</div>
+          <div class="chip">Coins: ${fmtInt(coinsBalance())} | Saved: ${esc(lastSaved)}</div>
         </header>
 
         <main class="main">${content}</main>
@@ -974,7 +783,6 @@
 
     if (r.page === "home") content = homeView();
     else if (r.page === "skills") content = skillsView();
-    else if (r.page === "actions") content = actionsView();
     else if (r.page === "rewards") content = rewardsView();
     else if (r.page === "log") content = logView();
     else if (r.page === "settings") content = settingsView();
@@ -1002,240 +810,31 @@
     }
   }
 
-  // ---- Modals: Skill / Action / Reward ----
-  function openSkillModal(skill=null) {
-    const isNew = !skill;
-    const id = skill?.id || createId();
-    const name = skill?.name || "";
-    const icon = skill?.icon || EM.star;
-    const color = skill?.color || "";
-    const archived = !!skill?.archived;
+  function openNewRewardModal(existing=null) {
+    const isNew = !existing;
+    const id = existing?.id || createId();
+    const name = existing?.name || "";
+    const cost = existing?.costCoins ?? 0;
+    const reqs = (existing?.requirements || []).map(r => ({ ...r }));
 
-    modal(isNew ? "Add Skill" : "Edit Skill", `
-      <div class="stack">
-        <div class="stack" style="gap:6px">
-          <div class="small">Name</div>
-          <input class="input" id="skName" value="${esc(name)}" placeholder="e.g. Deep Work" />
-        </div>
-        <div class="grid grid2" style="gap:10px">
-          <div class="stack" style="gap:6px">
-            <div class="small">Icon (emoji)</div>
-            <input class="input" id="skIcon" value="${esc(icon)}" />
-          </div>
-          <div class="stack" style="gap:6px">
-            <div class="small">Color (optional)</div>
-            <input class="input" id="skColor" value="${esc(color)}" placeholder="#22c55e" />
-          </div>
-        </div>
-        ${isNew ? "" : `
-          <label class="row" style="justify-content:flex-start; gap:10px">
-            <input type="checkbox" id="skArchived" ${archived?"checked":""} />
-            <span class="small">Archived</span>
-          </label>
-          <div class="hr"></div>
-          <button class="btn-danger" data-skill-delete="${esc(id)}">${EM.trash} Delete skill</button>
-          <p class="small">Deleting removes it from actions and reward requirements.</p>
-        `}
-      </div>
-    `, [
-      { label:"Cancel", onClick:(close)=>close() },
-      { label: isNew ? "Create" : "Save", primary:true, onClick:(close)=> {
-        const newName = ($("#skName")?.value || "").trim() || "Skill";
-        const newIcon = ($("#skIcon")?.value || EM.star).trim() || EM.star;
-        const newColor = ($("#skColor")?.value || "").trim();
-        const newArchived = isNew ? false : !!$("#skArchived")?.checked;
-
-        commit(()=> {
-          const t = now();
-          if (isNew) {
-            state.skills.push({
-              id,
-              name: newName,
-              icon: newIcon,
-              color: newColor || null,
-              xp: 0,
-              createdAt: t,
-              updatedAt: t,
-              archived: false,
-              order: state.skills.length
-            });
-          } else {
-            const s = state.skills.find(x=>x.id===id);
-            if (s) {
-              s.name = newName;
-              s.icon = newIcon;
-              s.color = newColor || null;
-              s.archived = newArchived;
-              s.updatedAt = t;
-            }
-          }
-          state.skills = state.skills.sort((a,b)=>a.order-b.order).map((x,i)=>({ ...x, order:i }));
-        });
-
-        toast("Saved", newName);
-        close();
-      } }
-    ]);
-
-    // delete handler inside modal
-    $("#modal")?.addEventListener("click", (e) => {
-      const del = e.target.closest("[data-skill-delete]");
-      if (!del) return;
-      const sid = del.getAttribute("data-skill-delete");
-
-      modal("Delete this skill?", `<p>This cannot be undone. It will also be removed from actions & reward requirements.</p>`, [
-        { label:"Cancel", onClick:(c)=>c() },
-        { label:"Delete", danger:true, onClick:(c)=> {
-          commit(()=> {
-            state.skills = state.skills.filter(s=>s.id!==sid).map((x,i)=>({ ...x, order:i }));
-            // Remove from actions
-            state.actions.forEach(a => { a.grants = (a.grants||[]).filter(g=>g.skillId !== sid); a.updatedAt = now(); });
-            // Remove from rewards requirements
-            state.rewards.forEach(r => { r.requirements = (r.requirements||[]).filter(req=>req.skillId !== sid); r.updatedAt = now(); });
-            // Clean log deltas referencing this skill
-            state.log = state.log.map(ev => ({
-              ...ev,
-              deltas: (ev.deltas||[]).filter(d=>d.skillId !== sid)
-            })).filter(ev => ev.type==="purchase" || ev.revertedAt || (ev.deltas && ev.deltas.length>0));
-          });
-          toast("Deleted", "Skill removed.");
-          c();
-          $("#modal")?.remove();
-        } }
-      ]);
-    }, { once:true });
-  }
-
-  function openActionModal(action=null) {
-    const isNew = !action;
-    const id = action?.id || createId();
     const skills = state.skills.filter(s=>!s.archived).sort((a,b)=>a.order-b.order);
-
-    let grants = (action?.grants || []).map(g => ({ ...g }));
-    if (isNew && grants.length===0 && skills[0]) grants = [{ skillId: skills[0].id, amount: 10 }];
-
-    const renderGrants = () => grants.map((g,i)=>`
+    const reqRows = () => reqs.map((r,i)=>`
       <div class="card" style="box-shadow:none">
         <div class="grid grid2" style="gap:10px">
           <div class="stack" style="gap:6px">
             <div class="small">Skill</div>
-            <select class="input" data-g-skill="${i}">
-              ${skills.map(s=>`<option value="${esc(s.id)}" ${s.id===g.skillId?"selected":""}>${esc(s.name)}</option>`).join("")}
-            </select>
-          </div>
-          <div class="stack" style="gap:6px">
-            <div class="small">XP amount</div>
-            <input class="input" inputmode="decimal" data-g-amt="${i}" value="${esc(String(g.amount||0))}" />
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <span class="small">Grant</span>
-          <button class="btn-danger" data-g-remove="${i}">Remove</button>
-        </div>
-      </div>
-    `).join("");
-
-    modal(isNew ? "Add Action" : "Edit Action", `
-      <div class="stack">
-        <div class="stack" style="gap:6px">
-          <div class="small">Name</div>
-          <input class="input" id="acName" value="${esc(action?.name||"")}" placeholder="e.g. Gym session" />
-        </div>
-        <div class="stack" style="gap:6px">
-          <div class="small">Icon (emoji, optional)</div>
-          <input class="input" id="acIcon" value="${esc(action?.icon||"")}" placeholder="âš¡" />
-        </div>
-
-        <div class="row">
-          <h2 class="h2">Grants</h2>
-          <button data-g-add>${EM.plus} Add</button>
-        </div>
-        <div id="grantList" class="stack">${renderGrants() || `<p class="small">No grants.</p>`}</div>
-
-        ${isNew ? "" : `
-          <div class="hr"></div>
-          <button class="btn-danger" data-action-delete="${esc(id)}">${EM.trash} Delete action</button>
-        `}
-      </div>
-    `, [
-      { label:"Cancel", onClick:(close)=>close() },
-      { label: isNew ? "Create" : "Save", primary:true, onClick:(close)=> {
-        const name = ($("#acName")?.value || "").trim() || "Action";
-        const icon = ($("#acIcon")?.value || "").trim();
-
-        const outGrants = grants.map((g,i)=> {
-          const sid = ($(`[data-g-skill="${i}"]`)?.value || g.skillId);
-          const amt = Number($(`[data-g-amt="${i}"]`)?.value || g.amount) || 0;
-          return { skillId: sid, amount: amt };
-        }).filter(g => g.skillId && g.amount !== 0);
-
-        commit(()=> {
-          const t = now();
-          if (isNew) {
-            state.actions.push({ id, name, icon, grants: outGrants, createdAt:t, updatedAt:t });
-          } else {
-            const a = state.actions.find(x=>x.id===id);
-            if (a) { a.name=name; a.icon=icon; a.grants=outGrants; a.updatedAt=t; }
-          }
-        });
-
-        toast("Saved", name);
-        close();
-      } }
-    ]);
-
-    const overlay = $("#modal");
-    overlay?.addEventListener("click", (e) => {
-      if (e.target.closest("[data-g-add]")) {
-        const first = skills[0]?.id || "";
-        grants.push({ skillId:first, amount: 1 });
-        $("#grantList").innerHTML = renderGrants() || `<p class="small">No grants.</p>`;
-      }
-      const rem = e.target.closest("[data-g-remove]");
-      if (rem) {
-        const i = Number(rem.getAttribute("data-g-remove"));
-        grants.splice(i,1);
-        $("#grantList").innerHTML = renderGrants() || `<p class="small">No grants.</p>`;
-      }
-      const del = e.target.closest("[data-action-delete]");
-      if (del) {
-        const aid = del.getAttribute("data-action-delete");
-        modal("Delete this action?", `<p>This cannot be undone.</p>`, [
-          { label:"Cancel", onClick:(c)=>c() },
-          { label:"Delete", danger:true, onClick:(c)=> {
-            commit(()=>{ state.actions = state.actions.filter(a=>a.id!==aid); });
-            toast("Deleted", "Action removed.");
-            c();
-            $("#modal")?.remove();
-          } }
-        ]);
-      }
-    });
-  }
-
-  function openRewardModal(reward=null) {
-    const isNew = !reward;
-    const id = reward?.id || createId();
-    const skills = state.skills.filter(s=>!s.archived).sort((a,b)=>a.order-b.order);
-
-    let reqs = (reward?.requirements || []).map(r=>({ ...r }));
-    const renderReqs = () => reqs.map((r,i)=>`
-      <div class="card" style="box-shadow:none">
-        <div class="grid grid2" style="gap:10px">
-          <div class="stack" style="gap:6px">
-            <div class="small">Skill</div>
-            <select class="input" data-r-skill="${i}">
+            <select class="input" data-req-skill="${i}">
               ${skills.map(s=>`<option value="${esc(s.id)}" ${s.id===r.skillId?"selected":""}>${esc(s.name)}</option>`).join("")}
             </select>
           </div>
           <div class="stack" style="gap:6px">
             <div class="small">Level</div>
-            <input class="input" inputmode="numeric" data-r-lvl="${i}" value="${esc(String(r.level||0))}" />
+            <input class="input" inputmode="numeric" data-req-level="${i}" value="${esc(String(r.level||0))}" />
           </div>
         </div>
         <div class="row" style="margin-top:10px">
           <span class="small">Requirement</span>
-          <button class="btn-danger" data-r-remove="${i}">Remove</button>
+          <button class="btn-danger" data-req-remove="${i}">Remove</button>
         </div>
       </div>
     `).join("");
@@ -1244,83 +843,111 @@
       <div class="stack">
         <div class="stack" style="gap:6px">
           <div class="small">Name</div>
-          <input class="input" id="rwName" value="${esc(reward?.name||"")}" placeholder="e.g. New game" />
+          <input class="input" id="rwName" value="${esc(name)}" placeholder="e.g. New game night" />
         </div>
         <div class="stack" style="gap:6px">
           <div class="small">Cost (coins)</div>
-          <input class="input" inputmode="numeric" id="rwCost" value="${esc(String(reward?.costCoins ?? 0))}" />
+          <input class="input" inputmode="numeric" id="rwCost" value="${esc(String(cost))}" />
         </div>
-
         <div class="row">
           <h2 class="h2">Requirements</h2>
-          <button data-r-add>${EM.plus} Add</button>
+          <button data-req-add>Add</button>
         </div>
-        <div id="reqList" class="stack">${renderReqs() || `<p class="small">None</p>`}</div>
-
-        ${isNew ? "" : `
-          <div class="hr"></div>
-          <button class="btn-danger" data-reward-delete="${esc(id)}">${EM.trash} Delete reward</button>
-        `}
+        <div id="reqList" class="stack">${reqRows() || `<p class="small">None</p>`}</div>
       </div>
     `, [
       { label:"Cancel", onClick:(close)=>close() },
-      { label: isNew ? "Create" : "Save", primary:true, onClick:(close)=> {
-        const name = ($("#rwName")?.value || "").trim() || "Reward";
-        const cost = Math.max(0, Number($("#rwCost")?.value || 0) || 0);
+      { label:isNew ? "Create" : "Save", primary:true, onClick:(close)=> {
+        const newName = ($("#rwName")?.value || "").trim() || "Reward";
+        const newCost = Math.max(0, Number($("#rwCost")?.value || 0) || 0);
 
-        const outReqs = reqs.map((r,i)=> {
-          const sid = ($(`[data-r-skill="${i}"]`)?.value || r.skillId);
-          const lvl = Math.max(0, Number($(`[data-r-lvl="${i}"]`)?.value || r.level) || 0);
+        const reqOut = reqs.map((r,i)=> {
+          const sid = ($(`[data-req-skill="${i}"]`)?.value || r.skillId);
+          const lvl = Math.max(0, Number($(`[data-req-level="${i}"]`)?.value || r.level) || 0);
           return { skillId:sid, level:lvl };
         }).filter(r => r.skillId);
 
         commit(()=> {
           const t = now();
-          if (isNew) state.rewards.push({ id, name, costCoins: cost, requirements: outReqs, createdAt:t, updatedAt:t, archived:false });
-          else {
-            const rr = state.rewards.find(x=>x.id===id);
-            if (rr) { rr.name=name; rr.costCoins=cost; rr.requirements=outReqs; rr.updatedAt=t; }
+          if (isNew) {
+            state.rewards.push({ id, name:newName, costCoins:newCost, requirements:reqOut, createdAt:t, updatedAt:t, archived:false });
+          } else {
+            const rr = state.rewards.find(x=>x.id===existing.id);
+            if (rr) { rr.name=newName; rr.costCoins=newCost; rr.requirements=reqOut; rr.updatedAt=t; }
           }
         });
 
-        toast("Saved", name);
+        toast("Saved", newName);
         close();
       } }
     ]);
 
+    // lightweight modal-internal handlers
     const overlay = $("#modal");
     overlay?.addEventListener("click", (e) => {
-      if (e.target.closest("[data-r-add]")) {
-        const first = skills[0]?.id || "";
-        reqs.push({ skillId:first, level:1 });
-        $("#reqList").innerHTML = renderReqs() || `<p class="small">None</p>`;
+      const add = e.target.closest("[data-req-add]");
+      if (add) {
+        const firstSkill = skills[0]?.id || "";
+        reqs.push({ skillId:firstSkill, level:1 });
+        $("#reqList").innerHTML = reqRows();
       }
-      const rem = e.target.closest("[data-r-remove]");
+      const rem = e.target.closest("[data-req-remove]");
       if (rem) {
-        const i = Number(rem.getAttribute("data-r-remove"));
+        const i = Number(rem.getAttribute("data-req-remove"));
         reqs.splice(i,1);
-        $("#reqList").innerHTML = renderReqs() || `<p class="small">None</p>`;
-      }
-      const del = e.target.closest("[data-reward-delete]");
-      if (del) {
-        const rid = del.getAttribute("data-reward-delete");
-        modal("Delete this reward?", `<p>This hides it from the shop. Purchases in the log will remain.</p>`, [
-          { label:"Cancel", onClick:(c)=>c() },
-          { label:"Delete", danger:true, onClick:(c)=> {
-            commit(()=> {
-              const rr = state.rewards.find(x=>x.id===rid);
-              if (rr) { rr.archived = true; rr.updatedAt = now(); }
-            });
-            toast("Deleted", "Reward removed.");
-            c();
-            $("#modal")?.remove();
-          } }
-        ]);
+        $("#reqList").innerHTML = reqRows() || `<p class="small">None</p>`;
       }
     });
   }
 
-  // ---- Click handlers ----
+  function buyReward(id) {
+    const r = state.rewards.find(x=>x.id===id);
+    if (!r) return;
+    const chk = canBuyReward(r);
+    if (!chk.ok) { toast("Can't buy", chk.reason); return; }
+
+    commit(()=> {
+      state.wallet.spentCoins = coinsSpent() + r.costCoins;
+      const entry = { id:createId(), timestamp:now(), type:"purchase", rewardId:r.id, costCoins:r.costCoins, deltas:[], revertedAt:null };
+      state.log.push(entry);
+      if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
+    });
+    toast("Purchased", r.name);
+  }
+
+  function undoEvent(id) {
+    const e = state.log.find(x=>x.id===id);
+    if (!e || e.revertedAt) return;
+
+    commit(()=> {
+      if (e.type === "purchase") {
+        state.wallet.spentCoins = Math.max(0, coinsSpent() - (e.costCoins||0));
+      } else {
+        for (const d of e.deltas || []) {
+          const s = state.skills.find(x=>x.id===d.skillId);
+          if (!s) continue;
+          s.xp = Math.max(0, (Number(s.xp)||0) - (Number(d.delta)||0));
+          s.updatedAt = now();
+        }
+      }
+      e.revertedAt = now();
+    });
+    toast("Undone", "Event reverted.");
+  }
+
+  function addXp(skillId, amount) {
+    const s = state.skills.find(x=>x.id===skillId);
+    const amt = Number(amount);
+    if (!s || !Number.isFinite(amt) || amt===0) return;
+
+    commit(()=> {
+      s.xp = Math.max(0, (Number(s.xp)||0) + amt);
+      s.updatedAt = now();
+      state.log.push({ id:createId(), timestamp:now(), type:"skill_xp", skillId:s.id, deltas:[{skillId:s.id, delta:amt}], revertedAt:null, costCoins:0 });
+      if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
+    });
+  }
+
   document.addEventListener("click", async (e) => {
     const n = e.target.closest("[data-nav]");
     if (n) { nav(n.getAttribute("data-nav")); return; }
@@ -1337,49 +964,6 @@
       return;
     }
 
-    if (e.target.closest("[data-add-skill]")) { openSkillModal(null); return; }
-    const es = e.target.closest("[data-edit-skill]");
-    if (es) {
-      const sid = es.getAttribute("data-edit-skill");
-      const s = state.skills.find(x=>x.id===sid);
-      if (s) openSkillModal(s);
-      return;
-    }
-
-    if (e.target.closest("[data-add-action]")) { openActionModal(null); return; }
-    const ea = e.target.closest("[data-edit-action]");
-    if (ea) {
-      const aid = ea.getAttribute("data-edit-action");
-      const a = state.actions.find(x=>x.id===aid);
-      if (a) openActionModal(a);
-      return;
-    }
-    const ra = e.target.closest("[data-run-action]");
-    if (ra) { runAction(ra.getAttribute("data-run-action")); return; }
-
-    if (e.target.closest("[data-new-reward]")) { openRewardModal(null); return; }
-    const er = e.target.closest("[data-edit-reward]");
-    if (er) {
-      const rid = er.getAttribute("data-edit-reward");
-      const r = state.rewards.find(x=>x.id===rid);
-      if (r) openRewardModal(r);
-      return;
-    }
-    const br = e.target.closest("[data-buy-reward]");
-    if (br) { buyReward(br.getAttribute("data-buy-reward")); return; }
-
-    const un = e.target.closest("[data-undo]");
-    if (un) { undoEvent(un.getAttribute("data-undo")); return; }
-
-    if (e.target.closest("[data-clear-log]")) {
-      modal("Clear log?", `<p>This clears the log only.</p>`, [
-        { label:"Cancel", onClick:(close)=>close() },
-        { label:"Clear", danger:true, onClick:(close)=>{ commit(()=>{ state.log = []; }); toast("Cleared", "Log cleared."); close(); } }
-      ]);
-      return;
-    }
-
-    // Settings buttons
     if (e.target.closest("[data-random-avatar]")) { await randomizeAvatar(); render(); return; }
 
     if (e.target.closest("[data-export]")) {
@@ -1394,28 +978,21 @@
       toast("Exported", "JSON downloaded.");
       return;
     }
+
     if (e.target.closest("[data-import]")) { $("#fileInput")?.click(); return; }
 
     if (e.target.closest("[data-make-sync]")) {
-      const btn = e.target.closest("[data-make-sync]");
-      btn?.setAttribute("disabled","disabled");
       try {
-        toast("Sync code", "Generating...");
-        const code = await makeSyncCode();
-        const syncEl = $("#syncCode");
-        const linkEl = $("#shareLink");
-        if (!syncEl || !linkEl) { toast("Sync failed", "Missing UI elements."); return; }
-        syncEl.value = code;
+        const code = await makeSyncCode(state);
+        $("#syncCode").value = code;
         const base = window.location.href.split("#")[0];
-        linkEl.value = `${base}#save=${encodeURIComponent(code)}`;
+        $("#shareLink").value = `${base}#save=${encodeURIComponent(code)}`;
         $("#copySyncBtn")?.removeAttribute("disabled");
         $("#copyLinkBtn")?.removeAttribute("disabled");
         commit(()=>{ state.meta.lastBackupAt = now(); });
         toast("Sync code", "Generated.");
       } catch (err) {
         toast("Sync failed", String(err));
-      } finally {
-        btn?.removeAttribute("disabled");
       }
       return;
     }
@@ -1459,7 +1036,7 @@
     }
 
     if (e.target.closest("[data-reset-xp]")) {
-      modal("Reset XP + clear log?", `<p>Sets all XP to 0 and clears the log. Keeps skills/actions/rewards.</p>`, [
+      modal("Reset XP + clear log?", `<p>Sets all XP to 0 and clears the log. Keeps rewards/actions.</p>`, [
         { label:"Cancel", onClick:(close)=>close() },
         { label:"Reset", danger:true, onClick:(close)=> {
           commit(()=> {
@@ -1472,6 +1049,15 @@
           close();
         } }
       ]);
+      return;
+    }
+
+    if (e.target.closest("[data-set-momentum]")) {
+      commit(()=> {
+        const m = state.skills.find(s => (s.name||"").toLowerCase() === "momentum");
+        if (m) { m.xp = xpForLevel(84); m.updatedAt = now(); }
+      });
+      toast("Momentum", "Set to Level 84 (3570 XP).");
       return;
     }
 
@@ -1488,6 +1074,27 @@
           toast("Wiped", "Fresh save created.");
           close(); render();
         } }
+      ]);
+      return;
+    }
+
+    if (e.target.closest("[data-new-reward]")) { openNewRewardModal(null); return; }
+    const er = e.target.closest("[data-edit-reward]");
+    if (er) {
+      const r = state.rewards.find(x=>x.id===er.getAttribute("data-edit-reward"));
+      if (r) openNewRewardModal(r);
+      return;
+    }
+    const br = e.target.closest("[data-buy-reward]");
+    if (br) { buyReward(br.getAttribute("data-buy-reward")); return; }
+
+    const un = e.target.closest("[data-undo]");
+    if (un) { undoEvent(un.getAttribute("data-undo")); return; }
+
+    if (e.target.closest("[data-clear-log]")) {
+      modal("Clear log?", `<p>This clears the log only.</p>`, [
+        { label:"Cancel", onClick:(close)=>close() },
+        { label:"Clear", danger:true, onClick:(close)=>{ commit(()=>{ state.log = []; }); toast("Cleared", "Log cleared."); close(); } }
       ]);
       return;
     }
