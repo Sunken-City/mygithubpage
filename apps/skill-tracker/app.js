@@ -340,33 +340,84 @@
   // ----- Sync code (FIXED) -----
   // We generate a sync snapshot that trims the log to avoid huge payloads.
   function syncSnapshot() {
-    return { ...state, log: state.log.slice(-200) };
+    return { ...state, log: state.log.slice(-50) };
+  }
+  
+// --- base64url (byte-safe, no btoa/atob Unicode pitfalls) ---
+const _b64abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const _b64url = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+function bytesToB64Url(bytes) {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  let result = "";
+  let i = 0;
+  const len = u8.length;
+
+  while (i + 2 < len) {
+    const n = (u8[i] << 16) | (u8[i + 1] << 8) | u8[i + 2];
+    result += _b64url[(n >>> 18) & 63];
+    result += _b64url[(n >>> 12) & 63];
+    result += _b64url[(n >>> 6) & 63];
+    result += _b64url[n & 63];
+    i += 3;
   }
 
-  function bytesToB64Url(bytes) {
-    // Safer conversion (no huge spreads)
-    let bin = "";
-    if (typeof TextDecoder !== "undefined") {
-      try {
-        // iso-8859-1 maps 0..255 directly to chars
-        bin = new TextDecoder("iso-8859-1").decode(bytes);
-      } catch {
-        // fallback loop
-        for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-      }
-    } else {
-      for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+  if (i < len) {
+    const a = u8[i];
+    const b = (i + 1 < len) ? u8[i + 1] : 0;
+    const n = (a << 16) | (b << 8);
+
+    result += _b64url[(n >>> 18) & 63];
+    result += _b64url[(n >>> 12) & 63];
+    if (i + 1 < len) {
+      result += _b64url[(n >>> 6) & 63];
     }
-    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+    // No padding for URL-safe base64
   }
 
-  function b64UrlToBytes(b64url) {
-    const b64 = b64url.replace(/-/g,"+").replace(/_/g,"/") + "===".slice((b64url.length+3)%4);
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-    return bytes;
+  return result;
+}
+
+function b64UrlToBytes(s) {
+  const str = (s || "").replace(/-/g, "+").replace(/_/g, "/");
+  // add padding back
+  const padLen = (4 - (str.length % 4)) % 4;
+  const b64 = str + "=".repeat(padLen);
+
+  // Build reverse lookup
+  const rev = new Int16Array(256);
+  rev.fill(-1);
+  for (let i = 0; i < _b64abc.length; i++) rev[_b64abc.charCodeAt(i)] = i;
+
+  let outLen = (b64.length * 3) >> 2;
+  if (b64.endsWith("==")) outLen -= 2;
+  else if (b64.endsWith("=")) outLen -= 1;
+
+  const out = new Uint8Array(outLen);
+
+  let o = 0;
+  for (let i = 0; i < b64.length; ) {
+    const c1 = b64.charCodeAt(i++);
+    const c2 = b64.charCodeAt(i++);
+    const c3 = b64.charCodeAt(i++);
+    const c4 = b64.charCodeAt(i++);
+
+    const n1 = rev[c1], n2 = rev[c2];
+    const n3 = c3 === 61 ? -1 : rev[c3]; // '='
+    const n4 = c4 === 61 ? -1 : rev[c4];
+
+    if (n1 < 0 || n2 < 0 || (n3 < 0 && c3 !== 61) || (n4 < 0 && c4 !== 61)) {
+      throw new Error("Invalid base64");
+    }
+
+    const n = (n1 << 18) | (n2 << 12) | ((n3 & 63) << 6) | (n4 & 63);
+    out[o++] = (n >>> 16) & 255;
+    if (c3 !== 61 && o < out.length) out[o++] = (n >>> 8) & 255;
+    if (c4 !== 61 && o < out.length) out[o++] = n & 255;
   }
+
+  return out;
+}
 
   async function gzipString(str) {
     if ("CompressionStream" in window) {

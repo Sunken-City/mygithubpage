@@ -1,4 +1,4 @@
-const CACHE = "skill-tracker-v7";
+const CACHE = "skill-tracker-v8";
 const ASSETS = [
   "./",
   "./index.html",
