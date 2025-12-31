@@ -473,13 +473,29 @@ function b64UrlToBytes(s) {
     }
   }
 
-  function route() {
-    const h = location.hash || "#/home";
-    if (h.startsWith("#save=")) return { page:"save", code: decodeURIComponent(h.slice(6)) };
-    const cleaned = h.startsWith("#/") ? h.slice(2) : "home";
-    const parts = cleaned.split("/").filter(Boolean);
-    return { page: parts[0] || "home" };
+function route() {
+  const h = location.hash || "#/home";
+
+  // Accept BOTH formats:
+  // 1) #save=CODE
+  // 2) #/save/CODE
+  // 3) #/settings&save=CODE  (in case someone pastes weirdly)
+  if (h.startsWith("#save=")) return { page:"save", code: decodeURIComponent(h.slice(6)) };
+
+  if (h.startsWith("#/save/")) {
+    const code = h.slice("#/save/".length);
+    return { page: "save", code: decodeURIComponent(code) };
   }
+
+  // Also accept save param anywhere in hash
+  const m = h.match(/(?:^|[?&])save=([^&]+)/);
+  if (m) return { page:"save", code: decodeURIComponent(m[1]) };
+
+  const cleaned = h.startsWith("#/") ? h.slice(2) : "home";
+  const parts = cleaned.split("/").filter(Boolean);
+  return { page: parts[0] || "home" };
+}
+
   function nav(p) { location.hash = "#/" + p; }
 
   function modal(title, bodyHtml, actions) {
@@ -947,7 +963,7 @@ function b64UrlToBytes(s) {
 
         <div class="card">
           <h2 class="h2">Sync Code + Share Link</h2>
-          <p class="small">If this fails youâ€™ll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
+          <p class="small">If this fails you'll now see an error toast. Sync snapshot trims log to keep it reliable.</p>
           <div class="row" style="margin-top:10px; gap:10px; justify-content:flex-start; flex-wrap:wrap">
             <button class="btn-primary" data-make-sync>Generate sync code</button>
             <button data-copy-sync disabled id="copySyncBtn">Copy code</button>
@@ -1033,24 +1049,26 @@ function b64UrlToBytes(s) {
 
     $("#app").innerHTML = appShell(content, tab);
 
-    if (r.page === "save") {
-      setTimeout(() => {
-        modal("Import shared save?", `<p>This link contains a save snapshot. Import replaces your current save.</p>`, [
-          { label:"Cancel", onClick:(close)=>{ close(); nav("home"); } },
-          { label:"Import", primary:true, onClick: async (close) => {
-            try {
-              const incoming = await decodeSyncCode(r.code);
-              commit(()=>{ state = incoming; state.meta.lastBackupAt = now(); });
-              toast("Imported", "Shared save loaded.");
-            } catch (e) {
-              toast("Invalid save", String(e));
-            } finally {
-              close(); nav("home");
-            }
-          } }
-        ]);
-      }, 0);
-    }
+	if (r.page === "save") {
+	  // Import immediately; then go home.
+	  (async () => {
+		try {
+		  const incoming = await decodeSyncCode(r.code);
+		  state = incoming;
+		  state.meta.lastBackupAt = now();
+		  hardSave();
+		  toast("Imported", "Shared save loaded.");
+		} catch (e) {
+		  toast("Invalid save", String(e));
+		} finally {
+		  // Prevent re-import loops if user refreshes
+		  location.hash = "#/home";
+		  render();
+		}
+	  })();
+	  return;
+	}
+
   }
 
   // ---- Modals: Skill / Action / Reward ----
@@ -1457,8 +1475,9 @@ function b64UrlToBytes(s) {
         const linkEl = $("#shareLink");
         if (!syncEl || !linkEl) { toast("Sync failed", "Missing UI elements."); return; }
         syncEl.value = code;
-        const base = window.location.href.split("#")[0];
-        linkEl.value = `${base}#save=${encodeURIComponent(code)}`;
+		const base = window.location.href.split("#")[0];
+		// Use router-friendly format:
+		linkEl.value = `${base}#/save/${encodeURIComponent(code)}`;
         $("#copySyncBtn")?.removeAttribute("disabled");
         $("#copyLinkBtn")?.removeAttribute("disabled");
         commit(()=>{ state.meta.lastBackupAt = now(); });
