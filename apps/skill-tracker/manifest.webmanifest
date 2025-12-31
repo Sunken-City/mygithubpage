@@ -1,0 +1,13 @@
+{
+  "name": "Skill Tracker",
+  "short_name": "Skills",
+  "description": "Offline skill tracker (zero-backend).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "256x256", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
