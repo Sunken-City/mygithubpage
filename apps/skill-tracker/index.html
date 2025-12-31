@@ -13,8 +13,8 @@
 <body>
   <div id="app"></div>
 
-  <!-- pako is a fallback for gzip if the browser lacks CompressionStream -->
-  <script defer src="./vendor/pako.min.js"></script>
-  <script defer src="./app.js"></script>
+  <!-- IMPORTANT: pako before app.js (sync code uses it as fallback) -->
+  <script src="./vendor/pako.min.js" defer></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
