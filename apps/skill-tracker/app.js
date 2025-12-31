@@ -1025,7 +1025,7 @@ function route() {
             </div>
             <div class="brandStack">
               <div class="brandName">${esc(state.settings.profile.name)}</div>
-              <div class="brandSub">Skill Tracker</div>
+              <div class="brandSub">~ Skill Tracker ~</div>
             </div>
           </div>
           <div class="chip">${EM.coin} ${fmtInt(coinsBalance())} | Saved: ${esc(lastSaved)}</div>
@@ -1483,6 +1483,13 @@ function route() {
 		const code = await makeSyncCode();
 		const base = window.location.href.split("#")[0];
 		const link = `${base}#/save/${encodeURIComponent(code)}`;
+		
+		//Show immediately
+		const syncBox = $("#syncCode");
+		const linkBox = $("#shareLink");
+		if (syncBox) syncBox.value = code;
+		if (linkBox) linkBox.value = link;
+
 
 		commit(()=> {
 		  state.ui = state.ui || { syncCode:"", shareLink:"" };
@@ -1501,20 +1508,54 @@ function route() {
 
 
     if (e.target.closest("#copySyncBtn")) {
-      const code = $("#syncCode")?.value?.trim();
+      const ta = $("#syncCode");
+      const code = ta?.value?.trim();
       if (!code) return;
-      try { await navigator.clipboard.writeText(code); toast("Copied", "Sync code copied."); }
-      catch { toast("Copy failed", "Clipboard blocked."); }
+
+      // Try modern clipboard first
+      try {
+        await navigator.clipboard.writeText(code);
+        toast("Copied", "Sync code copied.");
+        return;
+      } catch {}
+
+      // Fallback: select + execCommand (works on many mobile browsers)
+      try {
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        const ok = document.execCommand("copy");
+        toast(ok ? "Copied" : "Copy failed", ok ? "Sync code copied." : "Clipboard blocked.");
+      } catch {
+        toast("Copy failed", "Clipboard blocked.");
+      }
       return;
     }
 
+
     if (e.target.closest("#copyLinkBtn")) {
-      const link = $("#shareLink")?.value?.trim();
+      const ta = $("#shareLink");
+      const link = ta?.value?.trim();
       if (!link) return;
-      try { await navigator.clipboard.writeText(link); toast("Copied", "Share link copied."); }
-      catch { toast("Copy failed", "Clipboard blocked."); }
+
+      try {
+        await navigator.clipboard.writeText(link);
+        toast("Copied", "Share link copied.");
+        return;
+      } catch {}
+
+      try {
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        const ok = document.execCommand("copy");
+        toast(ok ? "Copied" : "Copy failed", ok ? "Share link copied." : "Clipboard blocked.");
+      } catch {
+        toast("Copy failed", "Clipboard blocked.");
+      }
       return;
     }
+
 
     if (e.target.closest("[data-import-sync]")) {
       const code = $("#importCode")?.value?.trim();

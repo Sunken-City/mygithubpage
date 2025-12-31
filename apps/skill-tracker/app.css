@@ -193,3 +193,45 @@ textarea{min-height:110px; resize:vertical}
   display:flex; gap:10px;
   justify-content:flex-end;
 }
+
+/* --- Mobile/portrait fixes (r11) --- */
+@media (max-width: 520px) {
+  :root { --navH: 82px; } /* a bit more breathing room */
+
+  .header{
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  /* Let the top chip wrap instead of pushing layout */
+  .header .chip{
+    white-space: normal;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Global rows should be allowed to wrap on small screens */
+  .row{
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  /* Drop grids to 1 column in portrait */
+  .grid2{ grid-template-columns: 1fr; }
+  .grid3{ grid-template-columns: 1fr; }
+
+  /* Inputs/buttons shouldn’t overflow the card */
+  button, .input, select, textarea{
+    max-width: 100%;
+  }
+}
+
+/* Better safe-area padding for bottom nav */
+.main{
+  padding-bottom: calc(var(--navH) + 28px + env(safe-area-inset-bottom));
+}
+.nav{
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
