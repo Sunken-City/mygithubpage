@@ -118,9 +118,9 @@ does not share this data with third parties.</p>
 between the players in a match. Photon processes:</p>
 <ul>
   <li><strong>Your IP address</strong>, to route traffic and pick a nearby server.</li>
-  <li><strong>A randomly generated session identifier.</strong> On Android and iOS the game
-    connects anonymously: no account or device identifier is sent, and the session identifier is
-    not linked to you across sessions.</li>
+  <li><strong>A random player identifier.</strong> On Android and iOS the game creates a random
+    identifier when it is installed and uses it to keep players distinct in a match. It is not
+    your device's advertising ID or any account, and it is replaced if you reinstall the game.</li>
   <li><strong>On Steam only, your Steam ID</strong>, so that Steam friends can find each other's
     matches.</li>
   <li><strong>Gameplay state during a match</strong>, such as your character's position, chosen
@@ -184,7 +184,7 @@ purchase status are stored locally on your device.</p>
     </tr>
     <tr>
       <td><a href="https://www.photonengine.com/terms/privacyandcookiepolicy">Photon</a> (Exit Games GmbH)</td>
-      <td>IP address, anonymous session identifier (Steam ID on Steam), in-match gameplay
+      <td>IP address, random player identifier (Steam ID on Steam), in-match gameplay
         state, display name if set</td>
       <td>Online multiplayer</td>
     </tr>
@@ -213,7 +213,7 @@ personalised advertising, which some US state laws (such as California's) treat 
 <p>The ad, purchase and configuration services all use encrypted (HTTPS) connections. Photon
 encrypts the authentication step of each online connection. Live gameplay traffic during a match
 is not end-to-end encrypted, but contains no personal information beyond the display name and
-session identifier described above.</p>
+player identifier described above.</p>
 
 <h2 id="retention">How long data is kept</h2>
 <ul>
